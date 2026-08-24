@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">
+  <title id="title">RN Torwesten Transporte</title>
+  <desc id="desc">Firmenlogo RN Torwesten Transporte in Rot und Anthrazit</desc>
+  <g fill="none" stroke="#3f4042" stroke-width="18" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M28 238 L92 62 L322 38 L330 96"/>
+  </g>
+  <text x="98" y="213" fill="#b51220" font-family="Arial Black, Helvetica Neue, Arial, sans-serif" font-size="188" font-weight="900" letter-spacing="-14">RN</text>
+  <text x="358" y="170" fill="#3f4042" font-family="Helvetica Neue, Arial, sans-serif" font-size="88" font-weight="400" letter-spacing="-3">TORWESTEN</text>
+  <text x="372" y="235" fill="#3f4042" font-family="Helvetica Neue, Arial, sans-serif" font-size="37" font-weight="400" letter-spacing="16">TRANSPORTE</text>
+</svg>
