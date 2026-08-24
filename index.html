@@ -7,41 +7,49 @@
 <meta name="description" content="RN Torwesten Transporte in Niederntudorf: Betonpumpenverleih, Fahrmischerverleih und Kiestransporte.">
 <meta name="theme-color" content="#ffffff">
 <style>
-:root{--red:#b71724;--ink:#1f1f1f;--muted:#777;--line:#ececec;--soft:#f7f7f6;--max:980px}
-*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}.wrap{width:min(calc(100% - 36px),var(--max));margin:auto}
-header{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:#fff}.head{display:flex;align-items:center;justify-content:space-between;gap:24px}.logo{width:220px;display:block}.phone{font-size:14px;font-weight:650}
-main{padding:54px 0 0}.place{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}.services{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.service{padding:22px 0;border-bottom:1px solid var(--line);font-size:28px;line-height:1.15;font-weight:600;letter-spacing:-.02em}.service:last-child{border-bottom:0}
-.contact{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:28px 0}.number{font-size:22px;font-weight:700}.links{display:flex;gap:10px}.link{min-height:40px;padding:0 16px;border:1px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:650;border-radius:2px}.link.red{background:var(--red);border-color:var(--red);color:#fff}
-.jobs{border-top:1px solid var(--line);padding:18px 0 22px;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:13px;color:var(--muted)}.jobs a{color:var(--ink);font-weight:650}
-footer{margin-top:4px;background:var(--soft);border-top:1px solid var(--line);padding:16px 0;color:#999;font-size:11px}
-@media(max-width:700px){.wrap{width:min(calc(100% - 28px),var(--max))}header{height:68px}.logo{width:190px}.phone{font-size:13px}main{padding-top:38px}.place{margin-bottom:14px}.service{padding:18px 0;font-size:22px}.contact{align-items:flex-start;flex-direction:column;padding:24px 0}.number{font-size:20px}.links{width:100%}.link{flex:1}.jobs{align-items:flex-start;flex-direction:column;gap:7px;padding:16px 0 20px}}
+:root{--red:#b71724;--ink:#202020;--muted:#777;--line:#ececec;--soft:#f7f7f6;--max:1180px}
+*{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}.wrap{width:min(calc(100% - 44px),var(--max));margin:auto}
+header{height:78px;border-bottom:1px solid var(--line);background:#fff;display:flex;align-items:center}.head{display:flex;align-items:center;justify-content:space-between;gap:24px}.logo{width:225px;display:block}.head-contact{display:flex;align-items:center;gap:18px;font-size:14px}.head-contact a:first-child{font-weight:700}.head-contact a:last-child{color:var(--red);font-weight:700}
+.hero{position:relative;min-height:560px;display:flex;align-items:center;overflow:hidden;border-bottom:1px solid var(--line)}.hero:after{content:"RN";position:absolute;right:-24px;bottom:-70px;font-size:330px;line-height:.8;font-weight:900;letter-spacing:-.1em;color:#f3f3f1;z-index:0;pointer-events:none}.hero-inner{position:relative;z-index:1;padding:74px 0 84px}.place{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--red);font-weight:800;margin-bottom:22px}.services{max-width:930px;font-size:clamp(31px,4.7vw,58px);line-height:1.12;letter-spacing:-.035em;font-weight:620}.services .dot{color:var(--red);padding:0 .14em}.sub{margin-top:24px;font-size:16px;color:var(--muted)}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:32px}.btn{min-height:44px;padding:0 18px;border:1px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:#fff;border-radius:2px}.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.bottom{padding:22px 0 26px;background:#fff}.bottom-row{display:flex;align-items:center;justify-content:space-between;gap:24px;font-size:13px}.bottom-left{color:var(--muted)}.bottom-right{display:flex;align-items:center;gap:22px}.bottom-right a{font-weight:700}.bottom-right a:last-child{color:var(--red)}
+@media(max-width:720px){.wrap{width:min(calc(100% - 30px),var(--max))}header{height:70px}.logo{width:198px}.head-contact a:first-child{display:none}.head-contact{font-size:13px}.hero{min-height:520px;align-items:flex-start}.hero:after{font-size:210px;right:-18px;bottom:-30px}.hero-inner{padding:66px 0 72px}.place{margin-bottom:20px}.services{font-size:34px;line-height:1.15;max-width:620px}.services .dot{padding:0 .06em}.sub{font-size:15px;margin-top:22px}.actions{margin-top:28px;width:100%}.btn{flex:1}.bottom-row{align-items:flex-start;flex-direction:column;gap:12px}.bottom-right{width:100%;justify-content:space-between}.bottom{padding:18px 0 22px}}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap head">
     <img class="logo" src="assets/logo.svg" alt="RN Torwesten Transporte">
-    <a class="phone" href="tel:+491737275165">0173 72 75 165</a>
+    <div class="head-contact">
+      <a href="tel:+491737275165">0173 72 75 165</a>
+      <a href="tel:+491737275165">Anrufen</a>
+    </div>
   </div>
 </header>
+
 <main>
-  <div class="wrap">
-    <div class="place">Niederntudorf · Salzkotten</div>
-    <div class="services" aria-label="Leistungen">
-      <div class="service">Betonpumpenverleih</div>
-      <div class="service">Fahrmischerverleih</div>
-      <div class="service">Kiestransporte</div>
-    </div>
-    <div class="contact">
-      <a class="number" href="tel:+491737275165">0173 72 75 165</a>
-      <div class="links">
-        <a class="link red" href="tel:+491737275165">Anrufen</a>
-        <a class="link" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener">WhatsApp</a>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="place">Niederntudorf · Salzkotten</div>
+      <div class="services" aria-label="Leistungen">
+        Betonpumpenverleih <span class="dot">·</span> Fahrmischerverleih <span class="dot">·</span> Kiestransporte
+      </div>
+      <div class="sub">RN Torwesten Transporte</div>
+      <div class="actions">
+        <a class="btn red" href="tel:+491737275165">Direkt anrufen</a>
+        <a class="btn" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener">WhatsApp</a>
       </div>
     </div>
-    <div class="jobs"><span>Jobs</span><a href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20interessiere%20mich%20f%C3%BCr%20einen%20Job." target="_blank" rel="noopener">Kurz bewerben →</a></div>
-  </div>
+  </section>
+
+  <section class="bottom">
+    <div class="wrap bottom-row">
+      <div class="bottom-left">Direkter Kontakt für Einsatzanfragen</div>
+      <div class="bottom-right">
+        <a href="tel:+491737275165">0173 72 75 165</a>
+        <a href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20interessiere%20mich%20f%C3%BCr%20einen%20Job." target="_blank" rel="noopener">Jobs →</a>
+      </div>
+    </div>
+  </section>
 </main>
-<footer><div class="wrap">RN Torwesten Transporte · Niederntudorf</div></footer>
 </body>
 </html>
