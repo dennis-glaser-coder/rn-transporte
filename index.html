@@ -7,82 +7,105 @@
 <meta name="description" content="RN Torwesten Transporte aus Salzkotten-Niederntudorf: Betonpumpendienst, Frischbetontransporte und Kiestransporte.">
 <meta name="theme-color" content="#ffffff">
 <style>
-:root{--red:#b71724;--ink:#1d1e20;--text:#34363a;--muted:#76797d;--line:#e7e7e7;--soft:#f5f5f3;--max:1280px}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}img{display:block}.wrap{width:min(calc(100% - 56px),var(--max));margin:auto}
-header{height:86px;background:#fff;border-bottom:1px solid var(--line);position:relative;z-index:20}.head{height:100%;display:grid;grid-template-columns:280px 1fr auto;align-items:center;gap:34px}.logo{width:245px}.nav{display:flex;justify-content:center;gap:32px;font-size:13px;font-weight:650}.nav a{padding:34px 0}.head-contact{display:flex;align-items:center;gap:18px;font-size:13px;font-weight:700}.head-contact a:last-child{color:var(--red)}.menu{display:none;border:0;background:transparent;width:42px;height:42px;padding:7px}.menu span{display:block;height:2px;background:var(--ink);margin:7px 0}
-.hero{position:relative;min-height:680px;color:#fff;overflow:hidden;background:#202124}.hero-media{position:absolute;inset:0}.hero-media img{width:100%;height:100%;object-fit:cover;object-position:center 50%;filter:saturate(.8) contrast(1.04)}.hero-media:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,11,12,.86) 0%,rgba(10,11,12,.68) 43%,rgba(10,11,12,.28) 74%,rgba(10,11,12,.16) 100%),linear-gradient(0deg,rgba(10,11,12,.45),transparent 48%)}.hero-inner{position:relative;z-index:2;min-height:680px;display:flex;align-items:flex-end;padding:72px 0}.hero-copy{max-width:900px}.kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#ff7780;margin-bottom:20px}.hero h1{margin:0;font-size:clamp(48px,6vw,82px);line-height:.98;letter-spacing:-.055em;font-weight:690;max-width:900px}.hero-meta{margin-top:24px;display:flex;gap:22px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.78)}.hero-meta a{color:#fff;font-weight:700}.hero-meta .accent{color:#ff7780}
-.intro{padding:58px 0 52px;border-bottom:1px solid var(--line)}.intro-grid{display:grid;grid-template-columns:.78fr 1.22fr;gap:70px;align-items:start}.section-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:var(--red)}.intro p{margin:0;font-size:clamp(24px,2.7vw,38px);line-height:1.22;letter-spacing:-.025em;color:var(--ink);max-width:830px}
-.services{padding:0}.service-grid{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}.service{padding:40px 36px 44px;border-right:1px solid var(--line)}.service:first-child{padding-left:0}.service:last-child{border-right:0;padding-right:0}.service h2{margin:0;color:var(--ink);font-size:23px;letter-spacing:-.025em;font-weight:680}.service p{margin:12px 0 0;max-width:330px;color:var(--muted);font-size:14px;line-height:1.6}
-.about{padding:70px 0 74px;background:var(--soft)}.about-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:70px}.about-copy{max-width:760px}.about-copy p{margin:0;color:#56595e;font-size:17px;line-height:1.7}.about-copy p+p{margin-top:16px}.about-links{display:flex;gap:24px;margin-top:25px;font-size:14px;font-weight:700}.about-links a:first-child{color:var(--red)}
-.contact{background:var(--ink);color:#fff;padding:42px 0}.contact-row{display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center}.contact small{display:block;color:#9da0a4;font-size:10px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;margin-bottom:8px}.contact strong{font-size:clamp(26px,3vw,39px);letter-spacing:-.03em;font-weight:650}.contact-actions{display:flex;gap:24px;font-size:14px;font-weight:700}.contact-actions a:last-child{color:#ff7780}
-footer{background:#151617;color:#8e9195;padding:20px 0;font-size:11px}.foot{display:flex;align-items:center;justify-content:space-between;gap:24px}.foot-links{display:flex;gap:20px}.foot a{color:#c1c3c6}
-@media(max-width:900px){.wrap{width:min(calc(100% - 32px),var(--max))}header{height:74px}.head{grid-template-columns:1fr auto}.logo{width:205px}.nav,.head-contact{display:none}.menu{display:block}.head.open .nav{display:flex;position:absolute;top:74px;left:0;right:0;background:#fff;flex-direction:column;gap:0;padding:12px 16px 18px;border-bottom:1px solid var(--line);box-shadow:0 14px 28px rgba(0,0,0,.06)}.head.open .nav a{padding:11px 0}.hero,.hero-inner{min-height:570px}.hero-inner{padding:46px 0}.hero-media img{object-position:62% center}.hero-media:after{background:linear-gradient(90deg,rgba(10,11,12,.83),rgba(10,11,12,.48)),linear-gradient(0deg,rgba(10,11,12,.44),transparent 55%)}.kicker{margin-bottom:14px;font-size:10px}.hero h1{font-size:42px;line-height:1.02;max-width:620px}.hero-meta{margin-top:20px;gap:14px 18px;font-size:13px}.intro{padding:42px 0}.intro-grid{grid-template-columns:1fr;gap:18px}.intro p{font-size:27px}.service-grid{grid-template-columns:1fr}.service,.service:first-child,.service:last-child{padding:24px 0;border-right:0;border-bottom:1px solid var(--line)}.service:last-child{border-bottom:0}.service h2{font-size:20px}.service p{font-size:13px;margin-top:7px}.about{padding:44px 0 48px}.about-grid{grid-template-columns:1fr;gap:18px}.about-copy p{font-size:15px}.contact{padding:30px 0}.contact-row{grid-template-columns:1fr;gap:18px}.contact-actions{gap:20px}.foot{align-items:flex-start;flex-direction:column;gap:10px}.foot-links{gap:15px}}
+:root{--red:#b71724;--ink:#202124;--text:#36383b;--muted:#73767a;--line:#e6e7e8;--soft:#f5f5f3;--max:1240px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}img{display:block;max-width:100%}.wrap{width:min(calc(100% - 56px),var(--max));margin:auto}
+
+header{height:82px;background:#fff;border-bottom:1px solid var(--line);position:relative;z-index:30}.head{height:100%;display:grid;grid-template-columns:270px 1fr auto;align-items:center;gap:34px}.logo{width:235px}.nav{display:flex;justify-content:center;gap:30px;font-size:13px;font-weight:650;color:#44474a}.nav a{padding:32px 0}.phone{font-size:13px;font-weight:750;white-space:nowrap}.menu{display:none;border:0;background:transparent;width:42px;height:42px;padding:7px}.menu span{display:block;height:2px;background:var(--ink);margin:7px 0}
+
+.hero{position:relative;height:min(61vw,650px);min-height:510px;overflow:hidden;background:#242629}.hero-media{position:absolute;inset:0}.hero-media img{width:100%;height:100%;object-fit:cover;object-position:center 50%;filter:saturate(.88) contrast(1.02)}.hero-media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,9,10,.06) 0%,rgba(8,9,10,.03) 52%,rgba(8,9,10,.20) 100%)}.hero-inner{height:100%;position:relative;z-index:2;display:flex;align-items:flex-end;padding-bottom:38px}.hero-panel{width:min(620px,72%);padding:25px 28px 24px;background:rgba(19,20,22,.58);backdrop-filter:blur(3px);color:#fff}.hero-brand{font-size:28px;line-height:1.08;font-weight:680;letter-spacing:-.025em;margin:0}.hero-place{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-top:7px}.hero-services{margin:21px 0 0;font-size:18px;line-height:1.45;color:rgba(255,255,255,.94);font-weight:520}.hero-contact{display:flex;align-items:center;gap:20px;margin-top:19px;font-size:13px;font-weight:720}.hero-contact a:last-child{color:#ff7b83}
+
+.services{padding:68px 0 72px}.section-kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:800;margin-bottom:28px}.service-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:52px}.service{padding-top:21px;border-top:1px solid #cfd1d3}.service h2{margin:0;color:var(--ink);font-size:22px;letter-spacing:-.02em;font-weight:670}.service p{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.6;max-width:330px}
+
+.company{background:var(--soft);padding:72px 0}.company-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:72px;align-items:center}.company-photo{position:relative;aspect-ratio:1.5/1;background:#292b2e;overflow:hidden}.company-photo img{width:100%;height:100%;object-fit:cover}.company-photo.missing:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#303236,#202225)}.company-photo.missing:after{content:"Originalfoto RN";position:absolute;left:22px;bottom:20px;color:#9da0a4;font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.company-copy h2{margin:0 0 20px;color:var(--ink);font-size:clamp(30px,3vw,42px);line-height:1.08;letter-spacing:-.035em;font-weight:650}.company-copy p{margin:0;color:#5c5f63;font-size:16px;line-height:1.7;max-width:510px}.company-copy .region{margin-top:24px;font-size:13px;font-weight:700;color:var(--ink)}
+
+.jobs{background:#202124;color:#fff;padding:28px 0}.jobs-row{display:flex;align-items:center;justify-content:space-between;gap:32px}.jobs-copy strong{font-size:18px;font-weight:650}.jobs-copy span{margin-left:16px;color:#aeb1b5;font-size:13px}.jobs a{font-size:13px;font-weight:750;color:#ff7b83;white-space:nowrap}
+
+.contact{padding:64px 0 70px}.contact-row{display:grid;grid-template-columns:1fr auto;align-items:end;gap:42px}.contact h2{margin:0 0 12px;color:var(--ink);font-size:clamp(31px,3.5vw,46px);line-height:1;letter-spacing:-.04em;font-weight:650}.contact-number{font-size:20px;font-weight:750}.contact-actions{display:flex;align-items:center;gap:24px;font-size:14px;font-weight:750}.contact-actions a:last-child{color:var(--red)}
+
+footer{border-top:1px solid var(--line);padding:22px 0 26px;color:#8a8d91;font-size:11px}.foot{display:flex;align-items:center;justify-content:space-between;gap:28px}.foot-links{display:flex;gap:20px}.foot a{color:#55585b}
+
+@media(max-width:900px){.wrap{width:min(calc(100% - 32px),var(--max))}header{height:74px}.head{grid-template-columns:1fr auto}.logo{width:205px}.nav,.phone{display:none}.menu{display:block}.head.open .nav{display:flex;position:absolute;top:74px;left:0;right:0;background:#fff;flex-direction:column;gap:0;padding:12px 16px 18px;border-bottom:1px solid var(--line);box-shadow:0 14px 28px rgba(0,0,0,.06)}.head.open .nav a{padding:11px 0}.hero{height:500px;min-height:0}.hero-media img{object-position:61% center}.hero-inner{padding-bottom:18px}.hero-panel{width:100%;padding:20px 19px 19px;background:rgba(19,20,22,.60)}.hero-brand{font-size:24px}.hero-services{font-size:16px;margin-top:16px}.hero-contact{margin-top:16px}.services{padding:48px 0 50px}.section-kicker{margin-bottom:22px}.service-grid{grid-template-columns:1fr;gap:30px}.service{padding-top:17px}.service h2{font-size:20px}.service p{font-size:13px;margin-top:7px}.company{padding:48px 0 52px}.company-grid{grid-template-columns:1fr;gap:30px}.company-photo{aspect-ratio:1.45/1}.company-copy h2{font-size:31px;margin-bottom:15px}.company-copy p{font-size:15px}.jobs{padding:24px 0}.jobs-row{align-items:flex-start;flex-direction:column;gap:12px}.jobs-copy strong{display:block}.jobs-copy span{display:block;margin:6px 0 0;line-height:1.5}.contact{padding:48px 0 52px}.contact-row{grid-template-columns:1fr;gap:22px}.contact h2{font-size:34px}.contact-actions{gap:22px}.foot{align-items:flex-start;flex-direction:column;gap:12px}.foot-links{gap:16px}}
 </style>
 </head>
 <body>
 <header id="header">
   <div class="wrap head">
-    <a href="#start"><img class="logo" src="assets/logo.svg" alt="RN Torwesten Transporte"></a>
+    <a href="#start" aria-label="RN Torwesten Transporte Startseite"><img class="logo" src="assets/logo.svg" alt="RN Torwesten Transporte"></a>
     <nav class="nav" aria-label="Hauptnavigation">
       <a href="#leistungen">Leistungen</a>
       <a href="#unternehmen">Unternehmen</a>
-      <a href="#kontakt">Kontakt</a>
       <a href="#jobs">Jobs</a>
+      <a href="#kontakt">Kontakt</a>
     </nav>
-    <div class="head-contact"><a href="tel:+491737275165">0173 72 75 165</a><a href="#kontakt">Kontakt</a></div>
-    <button class="menu" id="menu" aria-label="Menü öffnen"><span></span><span></span><span></span></button>
+    <a class="phone" href="tel:+491737275165">0173 72 75 165</a>
+    <button class="menu" id="menu" aria-label="Menü öffnen" aria-expanded="false"><span></span><span></span><span></span></button>
   </div>
 </header>
+
 <main>
   <section class="hero" id="start">
     <div class="hero-media" aria-hidden="true">
       <img src="assets/rn-hero.jpg" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1784644579477-3fa2b0af8ac2?auto=format&fit=crop&fm=jpg&q=82&w=2400'" alt="">
     </div>
     <div class="wrap hero-inner">
-      <div class="hero-copy">
-        <div class="kicker">RN Torwesten Transporte · Salzkotten-Niederntudorf</div>
-        <h1>Betonpumpendienst.<br>Frischbetontransporte.<br>Kiestransporte.</h1>
-        <div class="hero-meta"><a href="tel:+491737275165">0173 72 75 165</a><a class="accent" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener">WhatsApp</a><span>OWL · Nordhessen · Niedersachsen</span></div>
+      <div class="hero-panel">
+        <h1 class="hero-brand">RN Torwesten Transporte</h1>
+        <div class="hero-place">Salzkotten-Niederntudorf</div>
+        <p class="hero-services">Betonpumpendienst · Frischbetontransporte · Kiestransporte</p>
+        <div class="hero-contact"><a href="tel:+491737275165">0173 72 75 165</a><a href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener">WhatsApp</a></div>
       </div>
     </div>
   </section>
 
-  <section class="intro" id="leistungen">
-    <div class="wrap intro-grid">
-      <div class="section-label">Leistungen</div>
-      <p>RN übernimmt Beton- und Transportaufgaben direkt für den Baustelleneinsatz.</p>
-    </div>
-  </section>
-
-  <section class="services" aria-label="Leistungen von RN">
-    <div class="wrap service-grid">
-      <article class="service"><h2>Betonpumpendienst</h2><p>Beton mit eigener Pumpentechnik zur vorgesehenen Einbaustelle fördern.</p></article>
-      <article class="service"><h2>Frischbetontransporte</h2><p>Transport mit Fahrmischern zwischen Betonwerk und Baustelle.</p></article>
-      <article class="service"><h2>Kiestransporte</h2><p>Kies und Schüttgüter zum jeweiligen Einsatzort transportieren.</p></article>
-    </div>
-  </section>
-
-  <section class="about" id="unternehmen">
-    <div class="wrap about-grid">
-      <div class="section-label">RN Torwesten Transporte</div>
-      <div class="about-copy">
-        <p>Inhabergeführtes Transportunternehmen aus Salzkotten-Niederntudorf mit Schwerpunkt auf Frischbetontransporten, Betonpumpen und Baustofftransporten.</p>
-        <p>Direkte Abstimmung mit Auftraggebern und Betonwerken – für Einsätze in OWL, Nordhessen und Niedersachsen.</p>
-        <div class="about-links"><a href="tel:+491737275165">Direkt anrufen</a><a id="jobs" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20interessiere%20mich%20f%C3%BCr%20einen%20Job." target="_blank" rel="noopener">Jobs bei RN</a></div>
+  <section class="services" id="leistungen">
+    <div class="wrap">
+      <div class="section-kicker">Leistungen</div>
+      <div class="service-grid">
+        <article class="service"><h2>Betonpumpendienst</h2><p>Beton auf der Baustelle bis zum vorgesehenen Einbauort fördern.</p></article>
+        <article class="service"><h2>Frischbetontransporte</h2><p>Transport mit Fahrmischern zwischen Betonwerk und Baustelle.</p></article>
+        <article class="service"><h2>Kiestransporte</h2><p>Kies und Schüttgüter zum jeweiligen Einsatzort transportieren.</p></article>
       </div>
+    </div>
+  </section>
+
+  <section class="company" id="unternehmen">
+    <div class="wrap company-grid">
+      <div class="company-photo">
+        <img src="assets/rn-company.jpg" alt="RN Torwesten Transporte im Einsatz" onerror="this.parentElement.classList.add('missing');this.remove()">
+      </div>
+      <div class="company-copy">
+        <div class="section-kicker">Unternehmen</div>
+        <h2>RN Torwesten Transporte</h2>
+        <p>Inhabergeführtes Transportunternehmen aus Salzkotten-Niederntudorf mit Schwerpunkt auf Betonlogistik und Baustellentransporten.</p>
+        <div class="region">OWL · Nordhessen · Niedersachsen</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="jobs" id="jobs">
+    <div class="wrap jobs-row">
+      <div class="jobs-copy"><strong>Jobs bei RN</strong><span>Interesse als Fahrer? Kurz per WhatsApp Kontakt aufnehmen.</span></div>
+      <a href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20interessiere%20mich%20f%C3%BCr%20einen%20Job." target="_blank" rel="noopener">Jobs ansehen →</a>
     </div>
   </section>
 
   <section class="contact" id="kontakt">
     <div class="wrap contact-row">
-      <div><small>Direkter Kontakt</small><strong><a href="tel:+491737275165">0173 72 75 165</a></strong></div>
+      <div><div class="section-kicker">Kontakt</div><h2>Einsatz besprechen</h2><a class="contact-number" href="tel:+491737275165">0173 72 75 165</a></div>
       <div class="contact-actions"><a href="tel:+491737275165">Anrufen</a><a href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener">WhatsApp</a></div>
     </div>
   </section>
 </main>
-<footer><div class="wrap foot"><span>RN Torwesten Transporte · Salzkotten-Niederntudorf</span><div class="foot-links"><a href="#jobs">Jobs</a><span>Impressum</span><span>Datenschutz</span></div></div></footer>
+
+<footer>
+  <div class="wrap foot">
+    <span>RN Torwesten Transporte · Salzkotten-Niederntudorf</span>
+    <div class="foot-links"><a href="#jobs">Jobs</a><span>Impressum</span><span>Datenschutz</span></div>
+  </div>
+</footer>
+
 <script>
-const h=document.getElementById('header'),m=document.getElementById('menu');m.addEventListener('click',()=>h.classList.toggle('open'));document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>h.classList.remove('open')));
+const h=document.getElementById('header'),m=document.getElementById('menu');m.addEventListener('click',()=>{const open=h.classList.toggle('open');m.setAttribute('aria-expanded',String(open));});document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>{h.classList.remove('open');m.setAttribute('aria-expanded','false');}));
 </script>
 </body>
 </html>
