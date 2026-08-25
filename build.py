@@ -11,7 +11,7 @@ p = Path("index.html")
 s = p.read_text(encoding="utf-8")
 
 company_old = '<h2>RN Transporte</h2><p>Inhabergeführtes Transportunternehmen aus Salzkotten-Niederntudorf mit Schwerpunkt auf Betonlogistik und Baustellentransporten.</p>'
-company_new = '<h2>RN Transporte – zuverlässig. leistungsstark. deutschlandweit im Einsatz.</h2><div class="company-copy"><p>Seit 2010 steht RN Transporte aus Salzkotten für zuverlässige Transport- und Betonlogistik. Als inhabergeführtes Unternehmen sind wir kontinuierlich gewachsen und haben uns mit Erfahrung, Flexibilität und persönlichem Einsatz als verlässlicher Partner für unsere Kunden etabliert.</p><p>Unser Leistungsspektrum umfasst den Transport von Frischbeton mit Fahrmischern, Baustofftransporte mit Sattelkippern, Holztransporte sowie das fachgerechte Fördern und Pumpen von Beton mit unseren Betonpumpen.</p><p>Mit einem leistungsfähigen Fuhrpark, erfahrenen Mitarbeitern und kurzen Entscheidungswegen sorgen wir dafür, dass unsere Aufträge zuverlässig, termingerecht und professionell umgesetzt werden. Dabei legen wir besonderen Wert auf persönliche Betreuung, hohe Einsatzbereitschaft und flexible Lösungen.</p><p>Heute sind wir <strong>deutschlandweit</strong> für unsere Kunden im Einsatz und stehen für eine partnerschaftliche Zusammenarbeit, auf die man sich verlassen kann – vom einzelnen Transportauftrag bis hin zu umfangreichen Projekten.</p></div>'
+company_new = '<h2>RN Transporte – zuverlässig. leistungsstark. deutschlandweit im Einsatz.</h2><div class="company-copy"><p class="company-lead">Seit 2010 steht RN Transporte aus Salzkotten für zuverlässige Transport- und Betonlogistik. Als inhabergeführtes Unternehmen sind wir kontinuierlich gewachsen und haben uns mit Erfahrung, Flexibilität und persönlichem Einsatz als verlässlicher Partner für unsere Kunden etabliert.</p><p>Unser Leistungsspektrum umfasst den Transport von Frischbeton mit Fahrmischern, Baustofftransporte mit Sattelkippern, Holztransporte sowie das fachgerechte Fördern und Pumpen von Beton mit unseren Betonpumpen.</p><p>Mit einem leistungsfähigen Fuhrpark, erfahrenen Mitarbeitern und kurzen Entscheidungswegen sorgen wir dafür, dass unsere Aufträge zuverlässig, termingerecht und professionell umgesetzt werden. Dabei legen wir besonderen Wert auf persönliche Betreuung, hohe Einsatzbereitschaft und flexible Lösungen.</p><p class="company-closing">Heute sind wir <strong>deutschlandweit</strong> für unsere Kunden im Einsatz und stehen für eine partnerschaftliche Zusammenarbeit, auf die man sich verlassen kann – vom einzelnen Transportauftrag bis hin zu umfangreichen Projekten.</p></div>'
 
 replacements = [
     ('</head>', '<link rel="stylesheet" href="assets/premium.css">\n</head>', 'premium stylesheet hook'),
@@ -35,6 +35,7 @@ checks = {
     "real logo": 'src="assets/logo.webp"' in s,
     "premium stylesheet": 'href="assets/premium.css"' in s,
     "company": 'Seit 2010 steht RN Transporte' in s and 'Holztransporte' in s,
+    "company editorial layout": 'class="company-lead"' in s and 'class="company-closing"' in s,
     "career": 'Karriere bei RN Transporte' in s,
     "driver licence": '<span>C/CE</span>' in s,
     "contact": 'Projekt oder Einsatz anfragen.' in s,
@@ -56,10 +57,15 @@ css += '''
 @media(min-width:1161px){.head{grid-template-columns:250px 1fr auto}}
 .service:before{display:none!important;content:none!important}
 .service h2{margin-top:0!important}
-.company-copy{margin-top:28px;display:grid;gap:16px;max-width:790px}
-.company-copy p{margin:0;color:#5e6266;font-size:15.5px;line-height:1.74}
+.company-main{max-width:980px}
+.company-main h2{max-width:900px}
+.company-copy{margin-top:34px;padding-top:30px;border-top:1px solid #d6d8d9;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:56px;row-gap:22px;max-width:920px}
+.company-copy p{margin:0;color:#5e6266;font-size:15px;line-height:1.74}
+.company-copy .company-lead{grid-column:1/-1;max-width:790px;color:#2f3337;font-size:18px;line-height:1.62;letter-spacing:-.012em}
+.company-copy .company-closing{grid-column:1/-1;margin-top:4px;padding-top:22px;border-top:1px solid #d6d8d9;max-width:840px}
 .company-copy strong{color:var(--ink);font-weight:680}
-@media(max-width:900px){.service h2{margin-top:0!important}.company-copy{margin-top:22px;gap:14px}.company-copy p{font-size:15px;line-height:1.68}}
+.company-meta{margin-top:38px}
+@media(max-width:900px){.service h2{margin-top:0!important}.company-main{max-width:none}.company-main h2{max-width:none}.company-copy{margin-top:24px;padding-top:23px;grid-template-columns:1fr;gap:16px;max-width:none}.company-copy .company-lead,.company-copy .company-closing{grid-column:auto;max-width:none}.company-copy .company-lead{font-size:17px;line-height:1.6}.company-copy .company-closing{margin-top:2px;padding-top:18px}.company-copy p{font-size:15px;line-height:1.68}.company-meta{margin-top:28px}}
 '''
 css_path.write_text(css, encoding="utf-8")
 
