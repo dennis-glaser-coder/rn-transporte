@@ -43,9 +43,9 @@ jobs:
           s = p.read_text(encoding="utf-8")
 
           replacements = [
-              (".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:4/1;object-fit:contain}", "desktop logo rule"),
-              (".logo{width:212px}", ".logo{width:212px;height:auto}", "tablet logo rule"),
-              (".logo{width:205px}", ".logo{width:205px;height:auto;max-height:54px;object-fit:contain}", "mobile logo rule"),
+              (".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:3/1;object-fit:contain;flex:0 0 auto}", "desktop logo rule"),
+              (".logo{width:212px}", ".logo{width:212px;height:auto;aspect-ratio:3/1;object-fit:contain}", "tablet logo rule"),
+              (".logo{width:205px}", ".logo{width:205px;height:auto;aspect-ratio:3/1;object-fit:contain}", "mobile logo rule"),
               (".hero-frame{height:500px;min-height:0}", ".hero-frame{height:auto;min-height:0;overflow:hidden;background:#fff}", "mobile hero frame"),
               (".hero-media img{object-position:61% center}", ".hero-media{position:relative;height:min(105vw,430px);min-height:360px}.hero-media img{object-position:64% center}.hero-media:after{background:linear-gradient(180deg,rgba(8,9,10,0) 0%,rgba(8,9,10,.02) 72%,rgba(8,9,10,.10) 100%)}", "mobile hero media"),
               (".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:18px 18px 17px;background:rgba(24,25,27,.47);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}", ".hero-panel{position:relative;left:auto;bottom:auto;width:100%;padding:17px 18px 16px;background:#1d1f21;-webkit-backdrop-filter:none;backdrop-filter:none}", "mobile hero panel"),
@@ -73,19 +73,9 @@ jobs:
           for legal_name in ("impressum.html", "datenschutz.html"):
               lp = Path(legal_name)
               legal = lp.read_text(encoding="utf-8")
-              legal = replace_once(legal, ".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:4/1;object-fit:contain}", f"{legal_name} desktop logo")
-              legal = replace_once(legal, ".logo{width:200px}", ".logo{width:200px;height:auto;object-fit:contain}", f"{legal_name} mobile logo")
+              legal = replace_once(legal, ".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:3/1;object-fit:contain}", f"{legal_name} desktop logo")
+              legal = replace_once(legal, ".logo{width:200px}", ".logo{width:200px;height:auto;aspect-ratio:3/1;object-fit:contain}", f"{legal_name} mobile logo")
               lp.write_text(legal, encoding="utf-8")
-
-          logo_path = Path("assets/logo.svg")
-          logo = logo_path.read_text(encoding="utf-8")
-          logo = replace_once(
-              logo,
-              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">',
-              '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="title desc">',
-              "logo SVG root",
-          )
-          logo_path.write_text(logo, encoding="utf-8")
           PY
 
       - name: Upload site
