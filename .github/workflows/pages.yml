@@ -34,6 +34,26 @@ jobs:
           cat assets/rn-hero-clean/01.b64 assets/rn-hero-clean/02.b64 assets/rn-hero-clean/03.b64 assets/rn-hero-clean/04.b64 | base64 -d > assets/rn-hero.webp
           test "$(stat -c%s assets/rn-hero.webp)" -gt 50000
 
+      - name: Polish mobile hero
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+          replacements = {
+              ".hero-frame{height:500px;min-height:0}": ".hero-frame{height:460px;min-height:0}",
+              ".hero-media img{object-position:61% center}": ".hero-media img{object-position:58% 42%;filter:saturate(1.02) contrast(1.05)}",
+              ".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:18px 18px 17px;background:rgba(24,25,27,.47);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}": ".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:16px 16px 15px;background:rgba(20,22,24,.58);-webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px)}",
+              ".hero-title{font-size:24px;line-height:1.2}": ".hero-title{font-size:22px;line-height:1.16}",
+              ".hero-contact{margin-top:15px;padding-top:14px}": ".hero-contact{gap:18px;margin-top:12px;padding-top:12px}",
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f"Expected mobile hero rule not found: {old}")
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding="utf-8")
+          PY
+
       - name: Bust hero cache
         run: sed -i "s#assets/rn-hero.webp#assets/rn-hero.webp?v=${GITHUB_SHA}#g" index.html
 
