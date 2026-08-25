@@ -43,9 +43,9 @@ jobs:
           s = p.read_text(encoding="utf-8")
 
           replacements = [
-              (".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:3/1;object-fit:contain;flex:0 0 auto}", "desktop logo rule"),
-              (".logo{width:212px}", ".logo{width:212px;height:auto;aspect-ratio:3/1;object-fit:contain}", "tablet logo rule"),
-              (".logo{width:205px}", ".logo{width:205px;height:auto;aspect-ratio:3/1;object-fit:contain}", "mobile logo rule"),
+              (".logo{width:228px}", ".logo{width:228px;height:auto;object-fit:contain}", "desktop logo rule"),
+              (".logo{width:212px}", ".logo{width:212px;height:auto;object-fit:contain}", "tablet logo rule"),
+              (".logo{width:205px}", ".logo{width:205px;height:auto;object-fit:contain}", "mobile logo rule"),
               (".hero-frame{height:500px;min-height:0}", ".hero-frame{height:auto;min-height:0;overflow:hidden;background:#fff}", "mobile hero frame"),
               (".hero-media img{object-position:61% center}", ".hero-media{position:relative;height:min(105vw,430px);min-height:360px}.hero-media img{object-position:64% center}.hero-media:after{background:linear-gradient(180deg,rgba(8,9,10,0) 0%,rgba(8,9,10,.02) 72%,rgba(8,9,10,.10) 100%)}", "mobile hero media"),
               (".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:18px 18px 17px;background:rgba(24,25,27,.47);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}", ".hero-panel{position:relative;left:auto;bottom:auto;width:100%;padding:17px 18px 16px;background:#1d1f21;-webkit-backdrop-filter:none;backdrop-filter:none}", "mobile hero panel"),
@@ -56,6 +56,7 @@ jobs:
               (".job-card h3{margin:10px 0 0;color:var(--ink);font-size:22px;line-height:1.18;letter-spacing:-.025em;font-weight:620}", ".job-card h3{margin:0;color:var(--ink);font-size:22px;line-height:1.18;letter-spacing:-.025em;font-weight:620}", "career heading spacing"),
               ("<div class=\"job-kicker\">Stelle 01</div>", "", "career Stelle 01"),
               ("<div class=\"job-kicker\">Stelle 02</div>", "", "career Stelle 02"),
+              ('src="assets/logo.svg"', 'src="assets/logo.webp"', "main logo path"),
           ]
 
           for old, new, label in replacements:
@@ -67,16 +68,24 @@ jobs:
               raise SystemExit("Career number labels still present")
           if "Einsatzgebiet</strong> Deutschlandweit" not in s:
               raise SystemExit("Deutschlandweit marker missing")
+          if 'src="assets/logo.webp"' not in s:
+              raise SystemExit("Real logo image reference missing")
 
           p.write_text(s, encoding="utf-8")
 
           for legal_name in ("impressum.html", "datenschutz.html"):
               lp = Path(legal_name)
               legal = lp.read_text(encoding="utf-8")
-              legal = replace_once(legal, ".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:3/1;object-fit:contain}", f"{legal_name} desktop logo")
-              legal = replace_once(legal, ".logo{width:200px}", ".logo{width:200px;height:auto;aspect-ratio:3/1;object-fit:contain}", f"{legal_name} mobile logo")
+              legal = replace_once(legal, ".logo{width:228px}", ".logo{width:228px;height:auto;object-fit:contain}", f"{legal_name} desktop logo")
+              legal = replace_once(legal, ".logo{width:200px}", ".logo{width:200px;height:auto;object-fit:contain}", f"{legal_name} mobile logo")
+              legal = replace_once(legal, 'src="assets/logo.svg"', 'src="assets/logo.webp"', f"{legal_name} logo path")
               lp.write_text(legal, encoding="utf-8")
           PY
+
+      - name: Verify RN assets
+        run: |
+          test -f rn_hero_final.png
+          test -f assets/logo.webp
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
