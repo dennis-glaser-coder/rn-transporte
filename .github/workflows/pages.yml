@@ -37,6 +37,8 @@ jobs:
           test -f rn_hero_final.png
           test -f assets/logo.webp
           test -f assets/premium.css
+          test -f robots.txt
+          test -f sitemap.xml
           grep -q 'src="rn_hero_final.png"' index.html
           grep -q 'src="assets/logo.webp"' index.html
           grep -q 'RN Transporte – zuverlässig. leistungsstark. deutschlandweit im Einsatz.' index.html
@@ -45,11 +47,19 @@ jobs:
           grep -q 'Karriere bei RN Transporte' index.html
           grep -q '<span>C/CE</span>' index.html
           grep -q 'Projekt oder Einsatz anfragen.' index.html
-          grep -q 'Deutschlandweit' index.html
+          grep -q 'Salzkotten · bundesweit im Einsatz' index.html
           grep -q '<a class="header-cta" href="#kontakt">Projekt anfragen</a>' index.html
           ! grep -q 'class="phone"' index.html
           ! grep -q 'Stelle 01' index.html
           ! grep -q 'Stelle 02' index.html
+          grep -q '<link rel="canonical" href="https://dennis-glaser-coder.github.io/rn-transporte/">' index.html
+          grep -q 'application/ld+json' index.html
+          grep -q 'RN Torwesten Transporte UG (haftungsbeschränkt)' index.html
+          grep -q 'og:image' index.html
+          grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/</loc>' sitemap.xml
+          grep -q 'noindex,follow' impressum.html
+          grep -q 'noindex,follow' datenschutz.html
           grep -q 'DE 270004353' impressum.html
           grep -q 'HRB 9694' impressum.html
           grep -q 'Amtsgericht Paderborn' impressum.html
