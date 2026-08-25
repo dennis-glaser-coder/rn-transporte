@@ -1,4 +1,8 @@
+from datetime import date
 from pathlib import Path
+
+
+SITE_URL = "https://dennis-glaser-coder.github.io/rn-transporte/"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -13,8 +17,68 @@ s = p.read_text(encoding="utf-8")
 company_old = '<h2>RN Transporte</h2><p>Inhabergeführtes Transportunternehmen aus Salzkotten-Niederntudorf mit Schwerpunkt auf Betonlogistik und Baustellentransporten.</p>'
 company_new = '<h2>RN Transporte – zuverlässig. leistungsstark. deutschlandweit im Einsatz.</h2><div class="company-copy"><p class="company-lead">Seit 2010 steht RN Transporte aus Salzkotten für zuverlässige Transport- und Betonlogistik. Als inhabergeführtes Unternehmen sind wir kontinuierlich gewachsen und haben uns mit Erfahrung, Flexibilität und persönlichem Einsatz als verlässlicher Partner für unsere Kunden etabliert.</p><p>Unser Leistungsspektrum umfasst den Transport von Frischbeton mit Fahrmischern, Baustofftransporte mit Sattelkippern, Holztransporte sowie das fachgerechte Fördern und Pumpen von Beton mit unseren Betonpumpen.</p><p>Mit einem leistungsfähigen Fuhrpark, erfahrenen Mitarbeitern und kurzen Entscheidungswegen sorgen wir dafür, dass unsere Aufträge zuverlässig, termingerecht und professionell umgesetzt werden. Dabei legen wir besonderen Wert auf persönliche Betreuung, hohe Einsatzbereitschaft und flexible Lösungen.</p><p class="company-closing">Heute sind wir <strong>deutschlandweit</strong> für unsere Kunden im Einsatz und stehen für eine partnerschaftliche Zusammenarbeit, auf die man sich verlassen kann – vom einzelnen Transportauftrag bis hin zu umfangreichen Projekten.</p></div>'
 
+seo_head = '''
+<link rel="canonical" href="__SITE_URL__">
+<link rel="preload" as="image" href="rn_hero_final.png" fetchpriority="high">
+<meta property="og:url" content="__SITE_URL__">
+<meta property="og:image" content="__SITE_URL__rn_hero_final.png">
+<meta property="og:image:alt" content="RN Transporte im Betonpumpen- und Baustelleneinsatz">
+<meta name="twitter:image" content="__SITE_URL__rn_hero_final.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["LocalBusiness", "Organization"],
+  "@id": "__SITE_URL__#organization",
+  "name": "RN Transporte",
+  "legalName": "RN Torwesten Transporte UG (haftungsbeschränkt)",
+  "url": "__SITE_URL__",
+  "logo": "__SITE_URL__assets/logo.webp",
+  "image": "__SITE_URL__rn_hero_final.png",
+  "description": "Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte aus Salzkotten. Bundesweit im Einsatz.",
+  "foundingDate": "2010",
+  "telephone": "+49 173 72 75 165",
+  "email": "ntorwesten@web.de",
+  "vatID": "DE270004353",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Lohweg 55a",
+    "postalCode": "33154",
+    "addressLocality": "Salzkotten",
+    "addressCountry": "DE"
+  },
+  "areaServed": {
+    "@type": "Country",
+    "name": "Deutschland"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+49 173 72 75 165",
+    "contactType": "customer service",
+    "availableLanguage": "de"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Leistungen",
+    "itemListElement": [
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Betonpumpendienst"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Frischbetontransporte"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Kies- und Baustofftransporte"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Holztransporte"}}
+    ]
+  }
+}
+</script>
+'''.replace("__SITE_URL__", SITE_URL)
+
 replacements = [
-    ('</head>', '<link rel="stylesheet" href="assets/premium.css">\n</head>', 'premium stylesheet hook'),
+    ('<title>RN Torwesten Transporte | Betonlogistik & Transporte</title>', '<title>Betonpumpendienst & Transporte | RN Transporte Salzkotten</title>', 'SEO title'),
+    ('<meta name="description" content="RN Torwesten Transporte aus Salzkotten-Niederntudorf: Betonpumpendienst, Frischbetontransporte und Kiestransporte. Deutschlandweit im Einsatz.">', '<meta name="description" content="RN Transporte aus Salzkotten: Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte. Bundesweit im Einsatz – jetzt Projekt anfragen.">', 'SEO description'),
+    ('<meta property="og:title" content="RN Torwesten Transporte">', '<meta property="og:title" content="Betonpumpendienst & Transporte | RN Transporte">', 'Open Graph title'),
+    ('<meta property="og:description" content="Betonpumpendienst, Frischbetontransporte und Kiestransporte aus Salzkotten-Niederntudorf. Deutschlandweit im Einsatz.">', '<meta property="og:description" content="Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte aus Salzkotten. Bundesweit im Einsatz.">', 'Open Graph description'),
+    ('<meta name="twitter:card" content="summary">', '<meta name="twitter:card" content="summary_large_image">', 'Twitter card'),
+    ('<meta name="twitter:title" content="RN Torwesten Transporte">', '<meta name="twitter:title" content="Betonpumpendienst & Transporte | RN Transporte">', 'Twitter title'),
+    ('<meta name="twitter:description" content="Betonpumpendienst, Frischbetontransporte und Kiestransporte aus Salzkotten-Niederntudorf. Deutschlandweit im Einsatz.">', '<meta name="twitter:description" content="Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte aus Salzkotten. Bundesweit im Einsatz.">', 'Twitter description'),
+    ('</head>', seo_head + '<link rel="stylesheet" href="assets/premium.css">\n</head>', 'premium stylesheet and SEO hook'),
     ('src="assets/logo.svg"', 'src="assets/logo.webp"', 'real logo image'),
     ('<a class="phone" href="tel:+491737275165">0173 72 75 165</a>', '<a class="header-cta" href="#kontakt">Projekt anfragen</a>', 'header phone replacement'),
     ('<div class="hero-place">Salzkotten-Niederntudorf</div>', '<div class="hero-place">Salzkotten · bundesweit im Einsatz</div>', 'hero location'),
@@ -34,6 +98,9 @@ checks = {
     "final hero": 'src="rn_hero_final.png"' in s,
     "real logo": 'src="assets/logo.webp"' in s,
     "premium stylesheet": 'href="assets/premium.css"' in s,
+    "canonical": f'<link rel="canonical" href="{SITE_URL}">' in s,
+    "structured data": 'application/ld+json' in s and 'RN Torwesten Transporte UG (haftungsbeschränkt)' in s,
+    "social image": f'<meta property="og:image" content="{SITE_URL}rn_hero_final.png">' in s,
     "company": 'Seit 2010 steht RN Transporte' in s and 'Holztransporte' in s,
     "company editorial layout": 'class="company-lead"' in s and 'class="company-closing"' in s,
     "career": 'Karriere bei RN Transporte' in s,
@@ -70,10 +137,36 @@ css += '''
 '''
 css_path.write_text(css, encoding="utf-8")
 
-for legal_name in ("impressum.html", "datenschutz.html"):
+legal_urls = {
+    "impressum.html": f"{SITE_URL}impressum.html",
+    "datenschutz.html": f"{SITE_URL}datenschutz.html",
+}
+
+for legal_name, legal_url in legal_urls.items():
     lp = Path(legal_name)
     legal = lp.read_text(encoding="utf-8")
+    legal = replace_once(legal, '<meta name="robots" content="index,follow">', f'<meta name="robots" content="noindex,follow"><link rel="canonical" href="{legal_url}">', f'{legal_name} indexing rule')
     legal = replace_once(legal, 'src="assets/logo.svg"', 'src="assets/logo.webp"', f'{legal_name} real logo')
     legal = legal.replace('.logo{width:228px}', '.logo{width:228px;height:auto;object-fit:contain}', 1)
     legal = legal.replace('.logo{width:200px}', '.logo{width:200px;height:auto;object-fit:contain}', 1)
+    if 'noindex,follow' not in legal or f'rel="canonical" href="{legal_url}"' not in legal:
+        raise SystemExit(f"RN legal SEO check failed: {legal_name}")
     lp.write_text(legal, encoding="utf-8")
+
+Path("robots.txt").write_text(
+    f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n",
+    encoding="utf-8",
+)
+
+lastmod = date.today().isoformat()
+Path("sitemap.xml").write_text(
+    f'''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{SITE_URL}</loc>
+    <lastmod>{lastmod}</lastmod>
+  </url>
+</urlset>
+''',
+    encoding="utf-8",
+)
