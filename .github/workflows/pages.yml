@@ -29,7 +29,7 @@ jobs:
         with:
           enablement: true
 
-      - name: Polish responsive RN layout
+      - name: Build RN premium presentation
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -43,20 +43,14 @@ jobs:
           s = p.read_text(encoding="utf-8")
 
           replacements = [
-              (".logo{width:228px}", ".logo{width:228px;height:auto;object-fit:contain}", "desktop logo rule"),
-              (".logo{width:212px}", ".logo{width:212px;height:auto;object-fit:contain}", "tablet logo rule"),
-              (".logo{width:205px}", ".logo{width:205px;height:auto;object-fit:contain}", "mobile logo rule"),
-              (".hero-frame{height:500px;min-height:0}", ".hero-frame{height:auto;min-height:0;overflow:hidden;background:#fff}", "mobile hero frame"),
-              (".hero-media img{object-position:61% center}", ".hero-media{position:relative;height:min(105vw,430px);min-height:360px}.hero-media img{object-position:64% center}.hero-media:after{background:linear-gradient(180deg,rgba(8,9,10,0) 0%,rgba(8,9,10,.02) 72%,rgba(8,9,10,.10) 100%)}", "mobile hero media"),
-              (".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:18px 18px 17px;background:rgba(24,25,27,.47);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}", ".hero-panel{position:relative;left:auto;bottom:auto;width:100%;padding:17px 18px 16px;background:#1d1f21;-webkit-backdrop-filter:none;backdrop-filter:none}", "mobile hero panel"),
-              (".hero-title{font-size:24px;line-height:1.2}", ".hero-title{font-size:22px;line-height:1.18}", "mobile hero title"),
-              (".hero-contact{margin-top:15px;padding-top:14px}", ".hero-contact{margin-top:13px;padding-top:13px}", "mobile hero contact"),
-              (".job-card{background:#fff;border:1px solid #dedfe0;padding:26px;display:flex;flex-direction:column;min-height:345px}", ".job-card{background:#fff;border:1px solid #dedfe0;border-top:2px solid var(--red);padding:26px;display:flex;flex-direction:column;min-height:345px}", "career card"),
-              (".job-kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:760}", "", "career number label style"),
-              (".job-card h3{margin:10px 0 0;color:var(--ink);font-size:22px;line-height:1.18;letter-spacing:-.025em;font-weight:620}", ".job-card h3{margin:0;color:var(--ink);font-size:22px;line-height:1.18;letter-spacing:-.025em;font-weight:620}", "career heading spacing"),
-              ("<div class=\"job-kicker\">Stelle 01</div>", "", "career Stelle 01"),
-              ("<div class=\"job-kicker\">Stelle 02</div>", "", "career Stelle 02"),
-              ('src="assets/logo.svg"', 'src="assets/logo.webp"', "main logo path"),
+              ('</head>', '<link rel="stylesheet" href="assets/premium.css">\n</head>', 'premium stylesheet hook'),
+              ('src="assets/logo.svg"', 'src="assets/logo.webp"', 'real logo image'),
+              ('<a class="phone" href="tel:+491737275165">0173 72 75 165</a>', '<a class="phone" href="tel:+491737275165">0173 72 75 165</a><a class="header-cta" href="#kontakt">Projekt anfragen</a>', 'header CTA'),
+              ('<div class="hero-place">Salzkotten-Niederntudorf</div>', '<div class="hero-place">Salzkotten-Niederntudorf · Deutschlandweit</div>', 'hero location'),
+              ('<h1 class="hero-title">Betonpumpendienst, Frischbetontransporte und Kiestransporte.</h1>', '<h1 class="hero-title">Betonlogistik und Transport. Zuverlässig im Einsatz.</h1><p class="hero-sub">Betonpumpendienst, Frischbeton- und Kiestransporte für Baustellen und Betonwerke.</p><div class="hero-cta-row"><a class="hero-cta" href="#kontakt">Projekt anfragen</a></div>', 'premium hero copy'),
+              ('<div class="job-kicker">Stelle 01</div>', '', 'career label 01'),
+              ('<div class="job-kicker">Stelle 02</div>', '', 'career label 02'),
+              ('<h2>Einsatz besprechen.</h2>', '<h2>Ihr nächster Einsatz beginnt mit einem kurzen Gespräch.</h2><p class="contact-copy">Betonpumpendienst oder Transportbedarf? Rufen Sie direkt an oder senden Sie uns Ihre Anfrage per WhatsApp.</p>', 'premium contact copy'),
           ]
 
           for old, new, label in replacements:
@@ -64,28 +58,38 @@ jobs:
 
           if 'src="rn_hero_final.png"' not in s:
               raise SystemExit("Final hero image reference changed unexpectedly")
-          if "Stelle 01" in s or "Stelle 02" in s:
-              raise SystemExit("Career number labels still present")
-          if "Einsatzgebiet</strong> Deutschlandweit" not in s:
-              raise SystemExit("Deutschlandweit marker missing")
           if 'src="assets/logo.webp"' not in s:
               raise SystemExit("Real logo image reference missing")
+          if 'href="assets/premium.css"' not in s:
+              raise SystemExit("Premium stylesheet missing")
+          if 'Stelle 01' in s or 'Stelle 02' in s:
+              raise SystemExit("Career number labels still present")
+          if 'Deutschlandweit' not in s:
+              raise SystemExit("Deutschlandweit marker missing")
 
           p.write_text(s, encoding="utf-8")
 
           for legal_name in ("impressum.html", "datenschutz.html"):
               lp = Path(legal_name)
               legal = lp.read_text(encoding="utf-8")
-              legal = replace_once(legal, ".logo{width:228px}", ".logo{width:228px;height:auto;object-fit:contain}", f"{legal_name} desktop logo")
-              legal = replace_once(legal, ".logo{width:200px}", ".logo{width:200px;height:auto;object-fit:contain}", f"{legal_name} mobile logo")
-              legal = replace_once(legal, 'src="assets/logo.svg"', 'src="assets/logo.webp"', f"{legal_name} logo path")
+              legal = replace_once(legal, 'src="assets/logo.svg"', 'src="assets/logo.webp"', f'{legal_name} real logo')
+              legal = legal.replace('.logo{width:228px}', '.logo{width:228px;height:auto;object-fit:contain}', 1)
+              legal = legal.replace('.logo{width:200px}', '.logo{width:200px;height:auto;object-fit:contain}', 1)
               lp.write_text(legal, encoding="utf-8")
           PY
 
-      - name: Verify RN assets
+      - name: Verify RN premium build
         run: |
           test -f rn_hero_final.png
           test -f assets/logo.webp
+          test -f assets/premium.css
+          grep -q 'src="rn_hero_final.png"' index.html
+          grep -q 'src="assets/logo.webp"' index.html
+          grep -q 'href="assets/premium.css"' index.html
+          grep -q 'Projekt anfragen' index.html
+          grep -q 'Deutschlandweit' index.html
+          ! grep -q 'Stelle 01' index.html
+          ! grep -q 'Stelle 02' index.html
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
