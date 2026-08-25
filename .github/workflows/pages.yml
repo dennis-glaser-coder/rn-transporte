@@ -43,9 +43,10 @@ jobs:
           grep -q 'Seit 2010 steht RN Transporte' index.html
           grep -q 'Holztransporte' index.html
           grep -q 'Karriere bei RN Transporte' index.html
-          grep -q '<span>CE</span>' index.html
+          grep -q '<span>C/CE</span>' index.html
           grep -q 'Projekt oder Einsatz anfragen.' index.html
           grep -q 'Deutschlandweit' index.html
+          grep -q '<a class="header-cta" href="#kontakt">Projekt anfragen</a>' index.html
           ! grep -q 'class="phone"' index.html
           ! grep -q 'Stelle 01' index.html
           ! grep -q 'Stelle 02' index.html
