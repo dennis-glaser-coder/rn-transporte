@@ -29,33 +29,64 @@ jobs:
         with:
           enablement: true
 
-      - name: Build RN hero image
-        run: |
-          cat assets/rn-hero-clean/01.b64 assets/rn-hero-clean/02.b64 assets/rn-hero-clean/03.b64 assets/rn-hero-clean/04.b64 | base64 -d > assets/rn-hero.webp
-          test "$(stat -c%s assets/rn-hero.webp)" -gt 50000
-
-      - name: Polish mobile hero
+      - name: Polish responsive RN layout
         run: |
           python - <<'PY'
           from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              if old not in text:
+                  raise SystemExit(f"Expected {label} not found")
+              return text.replace(old, new, 1)
+
           p = Path("index.html")
           s = p.read_text(encoding="utf-8")
-          replacements = {
-              ".hero-frame{height:500px;min-height:0}": ".hero-frame{height:460px;min-height:0}",
-              ".hero-media img{object-position:61% center}": ".hero-media img{object-position:58% 42%;filter:saturate(1.02) contrast(1.05)}",
-              ".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:18px 18px 17px;background:rgba(24,25,27,.47);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}": ".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:16px 16px 15px;background:rgba(20,22,24,.58);-webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px)}",
-              ".hero-title{font-size:24px;line-height:1.2}": ".hero-title{font-size:22px;line-height:1.16}",
-              ".hero-contact{margin-top:15px;padding-top:14px}": ".hero-contact{gap:18px;margin-top:12px;padding-top:12px}",
-          }
-          for old, new in replacements.items():
-              if old not in s:
-                  raise SystemExit(f"Expected mobile hero rule not found: {old}")
-              s = s.replace(old, new, 1)
-          p.write_text(s, encoding="utf-8")
-          PY
 
-      - name: Bust hero cache
-        run: sed -i "s#assets/rn-hero.webp#assets/rn-hero.webp?v=${GITHUB_SHA}#g" index.html
+          replacements = [
+              (".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:4/1;object-fit:contain}", "desktop logo rule"),
+              (".logo{width:212px}", ".logo{width:212px;height:auto}", "tablet logo rule"),
+              (".logo{width:205px}", ".logo{width:205px;height:auto;max-height:54px;object-fit:contain}", "mobile logo rule"),
+              (".hero-frame{height:500px;min-height:0}", ".hero-frame{height:auto;min-height:0;overflow:hidden;background:#fff}", "mobile hero frame"),
+              (".hero-media img{object-position:61% center}", ".hero-media{position:relative;height:min(105vw,430px);min-height:360px}.hero-media img{object-position:64% center}.hero-media:after{background:linear-gradient(180deg,rgba(8,9,10,0) 0%,rgba(8,9,10,.02) 72%,rgba(8,9,10,.10) 100%)}", "mobile hero media"),
+              (".hero-panel{left:16px;bottom:16px;width:calc(100% - 32px);padding:18px 18px 17px;background:rgba(24,25,27,.47);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}", ".hero-panel{position:relative;left:auto;bottom:auto;width:100%;padding:17px 18px 16px;background:#1d1f21;-webkit-backdrop-filter:none;backdrop-filter:none}", "mobile hero panel"),
+              (".hero-title{font-size:24px;line-height:1.2}", ".hero-title{font-size:22px;line-height:1.18}", "mobile hero title"),
+              (".hero-contact{margin-top:15px;padding-top:14px}", ".hero-contact{margin-top:13px;padding-top:13px}", "mobile hero contact"),
+              (".job-card{background:#fff;border:1px solid #dedfe0;padding:26px;display:flex;flex-direction:column;min-height:345px}", ".job-card{background:#fff;border:1px solid #dedfe0;border-top:2px solid var(--red);padding:26px;display:flex;flex-direction:column;min-height:345px}", "career card"),
+              (".job-kicker{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);font-weight:760}", "", "career number label style"),
+              (".job-card h3{margin:10px 0 0;color:var(--ink);font-size:22px;line-height:1.18;letter-spacing:-.025em;font-weight:620}", ".job-card h3{margin:0;color:var(--ink);font-size:22px;line-height:1.18;letter-spacing:-.025em;font-weight:620}", "career heading spacing"),
+              ("<div class=\"job-kicker\">Stelle 01</div>", "", "career Stelle 01"),
+              ("<div class=\"job-kicker\">Stelle 02</div>", "", "career Stelle 02"),
+          ]
+
+          for old, new, label in replacements:
+              s = replace_once(s, old, new, label)
+
+          if 'src="rn_hero_final.png"' not in s:
+              raise SystemExit("Final hero image reference changed unexpectedly")
+          if "Stelle 01" in s or "Stelle 02" in s:
+              raise SystemExit("Career number labels still present")
+          if "Einsatzgebiet</strong> Deutschlandweit" not in s:
+              raise SystemExit("Deutschlandweit marker missing")
+
+          p.write_text(s, encoding="utf-8")
+
+          for legal_name in ("impressum.html", "datenschutz.html"):
+              lp = Path(legal_name)
+              legal = lp.read_text(encoding="utf-8")
+              legal = replace_once(legal, ".logo{width:228px}", ".logo{width:228px;height:auto;aspect-ratio:4/1;object-fit:contain}", f"{legal_name} desktop logo")
+              legal = replace_once(legal, ".logo{width:200px}", ".logo{width:200px;height:auto;object-fit:contain}", f"{legal_name} mobile logo")
+              lp.write_text(legal, encoding="utf-8")
+
+          logo_path = Path("assets/logo.svg")
+          logo = logo_path.read_text(encoding="utf-8")
+          logo = replace_once(
+              logo,
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-labelledby="title desc">',
+              '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="title desc">',
+              "logo SVG root",
+          )
+          logo_path.write_text(logo, encoding="utf-8")
+          PY
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
