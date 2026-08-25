@@ -29,6 +29,11 @@ jobs:
         with:
           enablement: true
 
+      - name: Build RN hero image
+        run: |
+          cat assets/rn-hero-clean/01.b64 assets/rn-hero-clean/02.b64 assets/rn-hero-clean/03.b64 assets/rn-hero-clean/04.b64 | base64 -d > assets/rn-hero.webp
+          test "$(stat -c%s assets/rn-hero.webp)" -gt 50000
+
       - name: Bust hero cache
         run: sed -i "s#assets/rn-hero.webp#assets/rn-hero.webp?v=${GITHUB_SHA}#g" index.html
 
