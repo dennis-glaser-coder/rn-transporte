@@ -21,7 +21,7 @@ replacements = [
     ('<h1 class="hero-title">Betonpumpendienst, Frischbetontransporte und Kiestransporte.</h1>', '<h1 class="hero-title">Betonlogistik und Transport. Zuverlässig im Einsatz.</h1><p class="hero-sub">Betonpumpendienst, Frischbeton- und Kiestransporte für Baustellen und Betonwerke.</p><div class="hero-cta-row"><a class="hero-cta" href="#kontakt">Projekt anfragen</a></div>', 'premium hero copy'),
     (company_old, company_new, 'company copy'),
     ('<strong>Karriere bei RN</strong>', '<strong>Karriere bei RN Transporte</strong>', 'career title'),
-    ('<div class="job-facts"><span>Fahrmischer</span><span>Kipper</span><span>Sattelzug</span></div>', '<div class="job-facts"><span>Fahrmischer</span><span>Kipper</span><span>Sattelzug</span><span>CE</span></div>', 'driver licence fact'),
+    ('<div class="job-facts"><span>Fahrmischer</span><span>Kipper</span><span>Sattelzug</span></div>', '<div class="job-facts"><span>Fahrmischer</span><span>Kipper</span><span>Sattelzug</span><span>C/CE</span></div>', 'driver licence fact'),
     ('<div class="job-kicker">Stelle 01</div>', '', 'career label 01'),
     ('<div class="job-kicker">Stelle 02</div>', '', 'career label 02'),
     ('<h2>Einsatz besprechen.</h2>', '<h2>Projekt oder Einsatz anfragen.</h2><p class="contact-copy">Betonpumpendienst oder Transportbedarf? Rufen Sie direkt an oder senden Sie uns Ihre Anfrage per WhatsApp.</p>', 'premium contact copy'),
@@ -36,9 +36,10 @@ checks = {
     "premium stylesheet": 'href="assets/premium.css"' in s,
     "company": 'Seit 2010 steht RN Transporte' in s and 'Holztransporte' in s,
     "career": 'Karriere bei RN Transporte' in s,
-    "driver licence": '<span>CE</span>' in s,
+    "driver licence": '<span>C/CE</span>' in s,
     "contact": 'Projekt oder Einsatz anfragen.' in s,
     "header phone removed": 'class="phone"' not in s,
+    "header project CTA": '<a class="header-cta" href="#kontakt">Projekt anfragen</a>' in s,
     "job labels removed": 'Stelle 01' not in s and 'Stelle 02' not in s,
 }
 for label, ok in checks.items():
