@@ -156,10 +156,6 @@ footer{background:#1d1f21;color:#96999d;padding:25px 0;font-size:11px}
 </style>
 </head>
 <body>
-<script src="assets/hero/01.js"></script>
-<script src="assets/hero/02.js"></script>
-<script src="assets/hero/03.js"></script>
-<script src="assets/hero/04.js"></script>
 <header id="header">
   <div class="wrap head">
     <a href="#start" aria-label="RN Torwesten Transporte Startseite"><img class="logo" src="assets/logo.svg" alt="RN Torwesten Transporte"></a>
@@ -179,7 +175,7 @@ footer{background:#1d1f21;color:#96999d;padding:25px 0;font-size:11px}
     <div class="wrap">
       <div class="hero-frame">
         <div class="hero-media" aria-hidden="true">
-          <img id="rn-hero-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="" loading="eager" decoding="async" fetchpriority="high">
+          <img src="assets/rn-hero.webp" alt="" loading="eager" decoding="async" fetchpriority="high">
         </div>
         <div class="hero-panel">
           <div class="hero-place">Salzkotten-Niederntudorf</div>
@@ -249,8 +245,6 @@ footer{background:#1d1f21;color:#96999d;padding:25px 0;font-size:11px}
 </footer>
 
 <script>
-const hero=document.getElementById('rn-hero-img');
-if(hero && window.__RN_HERO){hero.src='data:image/webp;base64,'+window.__RN_HERO;}
 const h=document.getElementById('header');
 const m=document.getElementById('menu');
 const nav=document.getElementById('main-nav');
