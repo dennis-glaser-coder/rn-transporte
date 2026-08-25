@@ -29,6 +29,9 @@ jobs:
         with:
           enablement: true
 
+      - name: Bust hero cache
+        run: sed -i "s#assets/rn-hero.webp#assets/rn-hero.webp?v=${GITHUB_SHA}#g" index.html
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
