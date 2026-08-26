@@ -59,8 +59,9 @@ jobs:
           grep -q '>MENÜ<' index.html
           grep -q 'id="rn-mobile-menu-fix"' index.html
           grep -q 'id="rn-hero-email-style"' index.html
-          grep -q 'class="hero-email" href="mailto:ntorwesten@web.de"' index.html
-          grep -q '>ntorwesten@web.de</a>' index.html
+          grep -q 'class="hero-email" href="mailto:ntorwesten@web.de" aria-label="E-Mail schreiben"' index.html
+          grep -q '<rect x="3" y="5" width="18" height="14"' index.html
+          ! grep -q '>ntorwesten@web.de</a>' index.html
           grep -q 'assets/premium.css?v=89' index.html
           grep -q 'Alles Wichtige auf einen Blick.' index.html
           ! grep -q 'Direkt zum passenden Bereich.' index.html
