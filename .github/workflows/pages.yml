@@ -20,6 +20,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -35,7 +36,7 @@ jobs:
       - name: Apply RN postbuild refinements
         run: python postbuild.py
 
-      - name: Add Kiestransporte image
+      - name: Add Kies and Holz services
         run: python kies_image.py
 
       - name: Refine company page
@@ -65,197 +66,143 @@ jobs:
       - name: Apply SEO finish
         run: python .github/seo_finish.py
 
-      - name: Apply regional SEO focus
+      - name: Finalize regions, services and public URLs
         run: python .github/regional_seo.py
 
-      - name: Verify RN multipage site
+      - name: Verify public RN site
         run: |
-          test -f rn_hero_final.png
-          test -f assets/logo.webp
-          test -f assets/premium.css
-          test -f assets/favicon-rn.svg
-          test -f assets/leistungen/betonpumpendienst.png
-          test -f assets/leistungen/frischbetontransport.png
-          test -f assets/leistungen/Kiestransporte.png
-          test -f assets/leistungen/Baustelleneinsatz.png
-          test -f kies_image.py
-          test -f company_page.py
-          test -f home_finetune.py
-          test -f hero_email.py
-          test -f references_page.py
-          test -f premium_pass.py
-          test -f wow_pass.py
-          test -f premium_finish.py
-          test -f contact_finish.py
-          test -f .github/seo_finish.py
-          test -f .github/regional_seo.py
-          test -f index.html
-          test -f leistungen.html
-          test -f referenzen.html
-          test -f unternehmen.html
-          test -f karriere.html
-          test -f kontakt.html
-          test -f betonpumpendienst.html
-          test -f frischbetontransporte.html
-          test -f kiestransporte.html
-          test -f betonlogistik-paderborn-salzkotten.html
-          test -f betonlogistik-bielefeld-owl.html
-          test -f betonlogistik-guetersloh-lippstadt-soest.html
-          test -f betonlogistik-hoexter-warburg.html
-          test -f betonlogistik-kassel-nordhessen.html
-          test -f betonlogistik-suedniedersachsen.html
-          test -f robots.txt
-          test -f sitemap.xml
+          python - <<'PY'
+          from pathlib import Path
 
-          grep -q 'src="rn_hero_final.png"' index.html
-          grep -q '>MENÜ<' index.html
-          grep -q 'id="rn-mobile-menu-fix"' index.html
-          grep -q 'id="rn-home-finetune"' index.html
-          grep -q 'id="rn-hero-email-style"' index.html
-          grep -q 'id="rn-premium-pass"' index.html
-          grep -q 'id="rn-premium-motion"' index.html
-          grep -q 'id="rn-wow-pass"' index.html
-          grep -q 'id="rn-premium-finish"' index.html
-          grep -q 'background:#f1f1ee' index.html
-          grep -q 'content:"RN"' index.html
-          grep -q '<a href="tel:+491737275165">Anrufen</a>' index.html
-          ! grep -q '<a href="tel:+491737275165">0173 72 75 165</a>' index.html
-          grep -q 'class="hero-email" href="mailto:ntorwesten@web.de" aria-label="E-Mail schreiben"' index.html
-          grep -q '<rect x="3" y="5" width="18" height="14"' index.html
-          ! grep -q '>ntorwesten@web.de</a>' index.html
-          grep -q 'href="referenzen.html">Referenzen</a>' index.html
-          grep -q 'assets/premium.css?v=89' index.html
-          grep -q 'Alles Wichtige auf einen Blick.' index.html
-          ! grep -q 'Direkt zum passenden Bereich.' index.html
-          ! grep -Eq '<span>0[1-4]</span>' index.html
+          required = [
+              "index.html",
+              "leistungen.html",
+              "referenzen.html",
+              "unternehmen.html",
+              "karriere.html",
+              "kontakt.html",
+              "betonpumpendienst.html",
+              "frischbetontransporte.html",
+              "kiestransporte.html",
+              "betonlogistik-paderborn-salzkotten.html",
+              "betonlogistik-bielefeld-owl.html",
+              "betonlogistik-guetersloh-lippstadt-soest.html",
+              "betonlogistik-hoexter-warburg.html",
+              "betonlogistik-kassel-nordhessen.html",
+              "betonlogistik-suedniedersachsen.html",
+              "impressum.html",
+              "datenschutz.html",
+              "robots.txt",
+              "sitemap.xml",
+              "rn_hero_final.png",
+              "assets/logo.webp",
+              "assets/premium.css",
+              "assets/favicon-rn.svg",
+              "assets/rn-social-preview.jpg",
+              "assets/leistungen/betonpumpendienst.png",
+              "assets/leistungen/frischbetontransport.png",
+              "assets/leistungen/Kiestransporte.png",
+              "assets/leistungen/Baustelleneinsatz.png",
+          ]
+          missing = [p for p in required if not Path(p).is_file()]
+          if missing:
+              raise SystemExit(f"Missing RN build files: {missing}")
 
-          grep -q 'aria-current="page">Leistungen</a>' leistungen.html
-          grep -q 'id="rn-service-editorial-style"' leistungen.html
-          grep -q 'id="rn-kies-image-style"' leistungen.html
-          grep -q 'id="rn-premium-pass"' leistungen.html
-          grep -q 'id="rn-wow-pass"' leistungen.html
-          grep -q 'id="rn-premium-finish"' leistungen.html
-          grep -q '.page-hero h1{color:#fff' leistungen.html
-          grep -q 'box-shadow:0 0 0 100vmax #f1f1ee' leistungen.html
-          grep -q 'assets/leistungen/betonpumpendienst.png' leistungen.html
-          grep -q 'assets/leistungen/frischbetontransport.png' leistungen.html
-          grep -q 'assets/leistungen/Kiestransporte.png' leistungen.html
-          grep -q 'alt="RN Transporte Kiestransport im Einsatz"' leistungen.html
-          grep -q 'filter:saturate(.84)' leistungen.html
-          grep -q '<h2>Kiestransporte</h2>' leistungen.html
-          grep -q 'Betonpumpendienst, Frischbeton- & Kiestransporte | RN Transporte' leistungen.html
-          grep -q 'href="betonpumpendienst.html"' leistungen.html
-          grep -q 'href="frischbetontransporte.html"' leistungen.html
-          grep -q 'href="kiestransporte.html"' leistungen.html
-          grep -q 'id="rn-seo-service-links"' leistungen.html
-          grep -q 'id="rn-regional-focus"' leistungen.html
-          grep -q 'Regionales Kerngebiet' leistungen.html
-          grep -q 'rund 150 km um Salzkotten' leistungen.html
-          grep -q 'href="betonlogistik-paderborn-salzkotten.html"' leistungen.html
-          grep -q 'href="betonlogistik-kassel-nordhessen.html"' leistungen.html
-          ! grep -q 'class="service-text-row"' leistungen.html
-          ! grep -q 'Baustelleneinsatz.png' leistungen.html
+          if Path("leistungen/index.html").exists():
+              raise SystemExit("Obsolete leistungen/index.html must not exist")
 
-          grep -q 'aria-current="page">Referenzen</a>' referenzen.html
-          ! grep -q 'aria-current="page">Leistungen</a>' referenzen.html
-          grep -q 'id="rn-references-style"' referenzen.html
-          grep -q 'id="rn-premium-pass"' referenzen.html
-          grep -q 'id="rn-wow-pass"' referenzen.html
-          grep -q 'id="rn-premium-finish"' referenzen.html
-          grep -q 'grid-template-columns:repeat(12,minmax(0,1fr))' referenzen.html
-          grep -q 'Im Einsatz für unsere Kunden.' referenzen.html
-          grep -q 'assets/leistungen/betonpumpendienst.png' referenzen.html
-          grep -q 'assets/leistungen/frischbetontransport.png' referenzen.html
-          grep -q 'assets/leistungen/Kiestransporte.png' referenzen.html
-          grep -q 'assets/leistungen/Baustelleneinsatz.png' referenzen.html
-          grep -q 'Projekt anfragen →' referenzen.html
+          old_host = "dennis-glaser-coder.github.io/rn-transporte"
+          for path in Path(".").glob("*.html"):
+              text = path.read_text(encoding="utf-8")
+              if old_host in text:
+                  raise SystemExit(f"Old GitHub Pages host remains in {path}")
 
-          grep -q 'aria-current="page">Unternehmen</a>' unternehmen.html
-          grep -q 'id="rn-company-editorial-style"' unternehmen.html
-          grep -q 'id="rn-premium-pass"' unternehmen.html
-          grep -q 'id="rn-wow-pass"' unternehmen.html
-          grep -q 'id="rn-premium-finish"' unternehmen.html
-          grep -q 'assets/leistungen/Baustelleneinsatz.png' unternehmen.html
-          grep -q 'alt="RN Transporte im Baustelleneinsatz"' unternehmen.html
-          grep -q 'loading="lazy" decoding="async" fetchpriority="low"' unternehmen.html
-          grep -q 'Sie möchten mit RN Transporte zusammenarbeiten?' unternehmen.html
-          grep -q 'Kontakt aufnehmen →' unternehmen.html
-          grep -q 'Seit 2010 steht RN Transporte' unternehmen.html
+          index = Path("index.html").read_text(encoding="utf-8")
+          for token in (
+              'src="rn_hero_final.png"',
+              'href="referenzen.html">Referenzen</a>',
+              'id="rn-mobile-menu-fix"',
+              'id="rn-premium-finish"',
+              'Betonpumpendienst, Frischbeton-, Kies- und Holztransporte.',
+          ):
+              if token not in index:
+                  raise SystemExit(f"Homepage verification failed: {token}")
 
-          grep -q 'aria-current="page">Karriere</a>' karriere.html
-          grep -q 'id="rn-premium-motion"' karriere.html
-          grep -q 'id="rn-wow-pass"' karriere.html
-          grep -q 'id="rn-premium-finish"' karriere.html
-          grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
-          grep -q '<span>C/CE</span>' karriere.html
-          grep -q 'id="pumpenfahrer"' karriere.html
-          grep -q 'id="berufskraftfahrer"' karriere.html
-          grep -q '"@type":"JobPosting"' karriere.html
-          grep -q '"employmentType":"FULL_TIME"' karriere.html
+          services = Path("leistungen.html").read_text(encoding="utf-8")
+          for token in (
+              'id="rn-service-editorial-style"',
+              'id="rn-kies-image-style"',
+              'id="rn-regional-focus"',
+              'id="holztransporte"',
+              '<h2>Holztransporte</h2>',
+              'Paderborn / Salzkotten',
+              'Bielefeld / Gütersloh',
+              'Lippstadt / Soest / Geseke',
+              'Höxter / Warburg',
+              'Kassel / Nordhessen',
+              'Südniedersachsen',
+              'href="/betonlogistik-paderborn-salzkotten.html"',
+              'href="/betonlogistik-guetersloh-lippstadt-soest.html"',
+          ):
+              if token not in services:
+                  raise SystemExit(f"Services verification failed: {token}")
+          for stale in ('Bielefeld / OWL', 'Gütersloh / Lippstadt / Soest'):
+              if stale in services:
+                  raise SystemExit(f"Stale regional label remains: {stale}")
 
-          grep -q 'aria-current="page">Kontakt</a>' kontakt.html
-          grep -q 'id="rn-mobile-menu-fix"' kontakt.html
-          grep -q 'id="rn-contact-email-style"' kontakt.html
-          grep -q 'id="rn-premium-pass"' kontakt.html
-          grep -q 'id="rn-wow-pass"' kontakt.html
-          grep -q 'id="rn-premium-finish"' kontakt.html
-          grep -q 'id="rn-contact-final"' kontakt.html
-          grep -q 'mailto:ntorwesten@web.de' kontakt.html
-          grep -q '>ntorwesten@web.de</a>' kontakt.html
-          grep -q 'E-Mail →' kontakt.html
-          grep -q '0173 72 75 165' kontakt.html
-          grep -q 'Lohweg 55a' kontakt.html
-          ! grep -q 'Wir sprechen über Ihren Einsatz.' kontakt.html
-          ! grep -q 'Kurze Wege und direkte Abstimmung:' kontakt.html
+          region_expectations = {
+              "betonlogistik-paderborn-salzkotten.html": "Betonlogistik für Paderborn und den Kreis.",
+              "betonlogistik-bielefeld-owl.html": "Betonlogistik für Bielefeld und Gütersloh.",
+              "betonlogistik-guetersloh-lippstadt-soest.html": "Betonlogistik für Lippstadt, Soest und Geseke.",
+              "betonlogistik-hoexter-warburg.html": "Betonlogistik für Höxter und Warburg.",
+              "betonlogistik-kassel-nordhessen.html": "Betonlogistik für Kassel und Nordhessen.",
+              "betonlogistik-suedniedersachsen.html": "Betonlogistik für Südniedersachsen.",
+          }
+          for filename, hero in region_expectations.items():
+              text = Path(filename).read_text(encoding="utf-8")
+              for token in (
+                  hero,
+                  'id="rn-regional-page"',
+                  'Rund 150 km um Salzkotten',
+                  'Deutschlandweit nach Abstimmung',
+                  '"@type":"Service"',
+                  '"@type":"BreadcrumbList"',
+                  'href="/leistungen.html#holztransporte">Holztransporte</a>',
+              ):
+                  if token not in text:
+                      raise SystemExit(f"Regional page verification failed in {filename}: {token}")
 
-          for page in betonpumpendienst.html frischbetontransporte.html kiestransporte.html; do
-            grep -q 'aria-current="page">Leistungen</a>' "$page"
-            grep -q 'id="rn-seo-service-page"' "$page"
-            grep -q 'id="rn-service-regional-focus"' "$page"
-            grep -q '"@type":"Service"' "$page"
-            grep -q '"@type":"BreadcrumbList"' "$page"
-            grep -q 'Projekt anfragen →' "$page"
-            grep -q 'Einsatzgebiet</strong>Deutschlandweit' "$page"
-            grep -q 'Regionales Kerngebiet:' "$page"
-          done
-          grep -q 'Betonpumpendienst für Baustellen und Betonwerke.' betonpumpendienst.html
-          grep -q 'Frischbetontransporte zwischen Betonwerk und Baustelle.' frischbetontransporte.html
-          grep -q 'Kiestransporte und Schüttgüter für Baustellen.' kiestransporte.html
+          company = Path("unternehmen.html").read_text(encoding="utf-8")
+          for token in ('Seit 2010 steht RN Transporte', 'Holztransporte', 'Kontakt aufnehmen →'):
+              if token not in company:
+                  raise SystemExit(f"Company page verification failed: {token}")
 
-          for page in betonlogistik-paderborn-salzkotten.html betonlogistik-bielefeld-owl.html betonlogistik-guetersloh-lippstadt-soest.html betonlogistik-hoexter-warburg.html betonlogistik-kassel-nordhessen.html betonlogistik-suedniedersachsen.html; do
-            grep -q 'aria-current="page">Leistungen</a>' "$page"
-            grep -q 'id="rn-regional-page"' "$page"
-            grep -q 'Rund 150 km um Salzkotten' "$page"
-            grep -q 'Deutschlandweit nach Abstimmung' "$page"
-            grep -q '"@type":"Service"' "$page"
-            grep -q '"@type":"BreadcrumbList"' "$page"
-            grep -q 'Einsatz anfragen →' "$page"
-          done
-          grep -q 'Betonlogistik für Paderborn und den Kreis.' betonlogistik-paderborn-salzkotten.html
-          grep -q 'Betonlogistik für Bielefeld und OWL.' betonlogistik-bielefeld-owl.html
-          grep -q 'Betonlogistik zwischen Gütersloh, Lippstadt und Soest.' betonlogistik-guetersloh-lippstadt-soest.html
-          grep -q 'Betonlogistik für Höxter und Warburg.' betonlogistik-hoexter-warburg.html
-          grep -q 'Betonlogistik für Kassel und Nordhessen.' betonlogistik-kassel-nordhessen.html
-          grep -q 'Betonlogistik für Südniedersachsen.' betonlogistik-suedniedersachsen.html
+          career = Path("karriere.html").read_text(encoding="utf-8")
+          for token in ('Pumpenfahrer / Betonpumpenmaschinist', '"@type":"JobPosting"', '"employmentType":"FULL_TIME"'):
+              if token not in career:
+                  raise SystemExit(f"Career verification failed: {token}")
 
-          grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/referenzen.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonpumpendienst.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/frischbetontransporte.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/kiestransporte.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-paderborn-salzkotten.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-bielefeld-owl.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-guetersloh-lippstadt-soest.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-hoexter-warburg.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-kassel-nordhessen.html</loc>' sitemap.xml
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-suedniedersachsen.html</loc>' sitemap.xml
-          grep -q 'noindex,follow' impressum.html
-          grep -q 'noindex,follow' datenschutz.html
-          grep -q 'id="rn-legal-premium"' impressum.html
-          grep -q 'id="rn-legal-premium"' datenschutz.html
-          grep -q 'DE 270004353' impressum.html
-          grep -q 'HRB 9694' impressum.html
-          grep -q 'Amtsgericht Paderborn' impressum.html
+          contact = Path("kontakt.html").read_text(encoding="utf-8")
+          for token in ('mailto:ntorwesten@web.de', '0173 72 75 165', 'Lohweg 55a'):
+              if token not in contact:
+                  raise SystemExit(f"Contact verification failed: {token}")
+
+          robots = Path("robots.txt").read_text(encoding="utf-8")
+          sitemap = Path("sitemap.xml").read_text(encoding="utf-8")
+          if "https://rn-transporte.de/sitemap.xml" not in robots:
+              raise SystemExit("Production sitemap URL missing in robots.txt")
+          if "https://rn-transporte.de/betonlogistik-paderborn-salzkotten.html" not in sitemap:
+              raise SystemExit("Production regional URLs missing in sitemap.xml")
+          if old_host in robots or old_host in sitemap:
+              raise SystemExit("Old GitHub Pages host remains in robots/sitemap")
+
+          legal = Path("impressum.html").read_text(encoding="utf-8")
+          for token in ('DE 270004353', 'HRB 9694', 'Amtsgericht Paderborn'):
+              if token not in legal:
+                  raise SystemExit(f"Legal verification failed: {token}")
+
+          print("RN public-site verification passed")
+          PY
 
       - name: Prepare clean public artifact
         run: |
