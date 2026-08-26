@@ -78,6 +78,7 @@ replacements = [
     ('<meta name="twitter:card" content="summary">', '<meta name="twitter:card" content="summary_large_image">', 'Twitter card'),
     ('<meta name="twitter:title" content="RN Torwesten Transporte">', '<meta name="twitter:title" content="Betonpumpendienst & Transporte | RN Transporte">', 'Twitter title'),
     ('<meta name="twitter:description" content="Betonpumpendienst, Frischbetontransporte und Kiestransporte aus Salzkotten-Niederntudorf. Deutschlandweit im Einsatz.">', '<meta name="twitter:description" content="Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte aus Salzkotten. Bundesweit im Einsatz.">', 'Twitter description'),
+    ('<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">', '<link rel="icon" href="assets/favicon.svg?v=rn-brand-2" type="image/svg+xml">', 'favicon cache bust'),
     ('</head>', seo_head + '<link rel="stylesheet" href="assets/premium.css">\n</head>', 'premium stylesheet and SEO hook'),
     ('src="assets/logo.svg"', 'src="assets/logo.webp"', 'real logo image'),
     ('<a class="phone" href="tel:+491737275165">0173 72 75 165</a>', '<a class="header-cta" href="#kontakt">Projekt anfragen</a>', 'header phone replacement'),
@@ -98,6 +99,7 @@ checks = {
     "final hero": 'src="rn_hero_final.png"' in s,
     "real logo": 'src="assets/logo.webp"' in s,
     "premium stylesheet": 'href="assets/premium.css"' in s,
+    "favicon cache bust": 'assets/favicon.svg?v=rn-brand-2' in s,
     "canonical": f'<link rel="canonical" href="{SITE_URL}">' in s,
     "structured data": 'application/ld+json' in s and 'RN Torwesten Transporte UG (haftungsbeschränkt)' in s,
     "social image": f'<meta property="og:image" content="{SITE_URL}rn_hero_final.png">' in s,
@@ -146,10 +148,11 @@ for legal_name, legal_url in legal_urls.items():
     lp = Path(legal_name)
     legal = lp.read_text(encoding="utf-8")
     legal = replace_once(legal, '<meta name="robots" content="index,follow">', f'<meta name="robots" content="noindex,follow"><link rel="canonical" href="{legal_url}">', f'{legal_name} indexing rule')
+    legal = replace_once(legal, '<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">', '<link rel="icon" href="assets/favicon.svg?v=rn-brand-2" type="image/svg+xml">', f'{legal_name} favicon cache bust')
     legal = replace_once(legal, 'src="assets/logo.svg"', 'src="assets/logo.webp"', f'{legal_name} real logo')
     legal = legal.replace('.logo{width:228px}', '.logo{width:228px;height:auto;object-fit:contain}', 1)
     legal = legal.replace('.logo{width:200px}', '.logo{width:200px;height:auto;object-fit:contain}', 1)
-    if 'noindex,follow' not in legal or f'rel="canonical" href="{legal_url}"' not in legal:
+    if 'noindex,follow' not in legal or f'rel="canonical" href="{legal_url}"' not in legal or 'assets/favicon.svg?v=rn-brand-2' not in legal:
         raise SystemExit(f"RN legal SEO check failed: {legal_name}")
     lp.write_text(legal, encoding="utf-8")
 
