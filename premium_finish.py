@@ -70,9 +70,28 @@ footer{background:#121416!important;padding-top:16px!important;padding-bottom:16
 .foot{min-height:66px!important}
 .foot>span:first-child{letter-spacing:.02em}
 
+/* Homepage editorial directory: no more card-grid appearance */
+.home-overview{background:#f3f3f0!important;padding-top:96px!important;padding-bottom:116px!important}
+.home-overview-head{margin-bottom:58px!important}
+.home-link-grid{display:block!important;background:transparent!important;border-top:1px solid #c9cbca!important;box-shadow:none!important}
+.home-link-card,.home-link-card:nth-child(n),.home-link-card-dark{display:grid!important;grid-template-columns:minmax(230px,.62fr) minmax(0,1fr) auto!important;align-items:center!important;gap:44px!important;min-height:0!important;margin:0!important;padding:38px 4px!important;background:transparent!important;border:0!important;border-bottom:1px solid #c9cbca!important;box-shadow:none!important;color:var(--ink)!important;overflow:visible!important;transition:padding .24s ease,background .24s ease!important}
+.home-link-card:before{display:none!important}
+.home-link-card-dark:after{display:none!important}
+.home-link-card h3,.home-link-card:nth-child(1) h3{margin:0!important;max-width:none!important;color:var(--ink)!important;font-size:clamp(36px,3.35vw,50px)!important;line-height:.96!important;letter-spacing:-.052em!important;font-weight:510!important;transition:transform .24s ease!important}
+.home-link-card p,.home-link-card:nth-child(1) p,.home-link-card-dark p{margin:0!important;max-width:560px!important;color:#6a6e72!important;font-size:14px!important;line-height:1.65!important}
+.home-link-card b,.home-link-card-dark b{display:inline-flex!important;align-items:center!important;justify-content:flex-end!important;margin:0!important;color:#25282b!important;font-size:10px!important;line-height:1!important;letter-spacing:.07em!important;text-transform:uppercase!important;white-space:nowrap!important;opacity:1!important;transition:color .2s ease,transform .2s ease!important}
+.home-link-card b:after{content:"";display:block;width:36px;height:1px;margin-left:14px;background:#9b9ea1;transition:width .24s ease,background .24s ease}
+.home-link-card:last-child{border-bottom-color:#aeb0af!important}
+.home-link-card:last-child h3{position:relative}
+.home-link-card:last-child h3:after{content:"";position:absolute;left:0;bottom:-13px;width:42px;height:2px;background:var(--red)}
+
 @media(hover:hover){
   .service-page-cta a:hover,.references-cta a:hover{background:#fff!important;border-color:#fff!important;color:#17191b!important;transform:translateY(-1px)}
   .company-page-cta a:hover{background:#fff;color:#17191b!important;border-color:#fff}
+  .home-link-card:hover{padding-left:18px!important;padding-right:18px!important;background:rgba(255,255,255,.62)!important;transform:none!important;box-shadow:none!important}
+  .home-link-card:hover h3{transform:translateX(3px)!important}
+  .home-link-card:hover b{color:var(--red)!important;transform:none!important}
+  .home-link-card:hover b:after{width:50px;background:var(--red)}
 }
 
 @media(max-width:900px){
@@ -94,12 +113,23 @@ footer{background:#121416!important;padding-top:16px!important;padding-bottom:16
   .contact-main h2{font-size:42px!important}
   footer{padding-top:10px!important;padding-bottom:10px!important}
   .foot{min-height:54px!important}
+
+  .home-overview{padding-top:72px!important;padding-bottom:82px!important}
+  .home-overview-head{margin-bottom:38px!important}
+  .home-link-card,.home-link-card:nth-child(n),.home-link-card-dark{grid-template-columns:1fr!important;gap:13px!important;padding:29px 0!important;background:transparent!important}
+  .home-link-card h3,.home-link-card:nth-child(1) h3{font-size:34px!important}
+  .home-link-card p,.home-link-card:nth-child(1) p{font-size:13px!important;max-width:440px!important}
+  .home-link-card b,.home-link-card-dark b{justify-content:flex-start!important;margin-top:7px!important}
+  .home-link-card b:after{width:28px;margin-left:11px}
+  .home-link-card:last-child h3:after{bottom:-9px;width:34px}
 }
 
 @media(max-width:560px){
   .service-page-cta p,.references-cta p{font-size:28px!important}
   .company-page-cta{align-items:flex-start!important}
   .contact-main h2{font-size:38px!important}
+  .home-overview{padding-top:62px!important}
+  .home-link-card h3,.home-link-card:nth-child(1) h3{font-size:31px!important}
 }
 </style>'''
 
