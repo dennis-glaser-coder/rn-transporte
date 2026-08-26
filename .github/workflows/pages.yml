@@ -41,6 +41,9 @@ jobs:
       - name: Refine company page
         run: python company_page.py
 
+      - name: Finetune homepage
+        run: python home_finetune.py
+
       - name: Add homepage email contact
         run: python hero_email.py
 
@@ -56,6 +59,7 @@ jobs:
           test -f assets/leistungen/Baustelleneinsatz.png
           test -f kies_image.py
           test -f company_page.py
+          test -f home_finetune.py
           test -f hero_email.py
           test -f index.html
           test -f leistungen.html
@@ -68,6 +72,9 @@ jobs:
           grep -q 'src="rn_hero_final.png"' index.html
           grep -q '>MENÜ<' index.html
           grep -q 'id="rn-mobile-menu-fix"' index.html
+          grep -q 'id="rn-home-finetune"' index.html
+          grep -q '.home-overview{padding:72px 0 92px!important}' index.html
+          grep -q '.home-link-card{min-height:238px!important' index.html
           grep -q 'id="rn-hero-email-style"' index.html
           grep -q '<a href="tel:+491737275165">Anrufen</a>' index.html
           ! grep -q '<a href="tel:+491737275165">0173 72 75 165</a>' index.html
