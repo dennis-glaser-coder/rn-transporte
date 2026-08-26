@@ -32,10 +32,11 @@ jobs:
       - name: Build RN multipage site
         run: python build.py
 
-      - name: Final mobile-safe refinement
+      - name: Final premium refinement
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           # Homepage copy refinement.
           page = Path("index.html")
@@ -57,6 +58,89 @@ jobs:
               ".home-link-card h3{margin-top:0;font-size:27px}",
           )
           css_path.write_text(css, encoding="utf-8")
+
+          # Calm editorial services page: two real images, no placeholder for Kiestransporte.
+          service_markup = '''
+          <section class="service-editorial" aria-label="Leistungen im Überblick">
+            <div class="wrap service-editorial-list">
+              <article class="service-feature">
+                <div class="service-visual service-visual-fade-right">
+                  <img src="assets/leistungen/betonpumpendienst.png" alt="RN Transporte Betonpumpendienst im Einsatz" loading="lazy" decoding="async" fetchpriority="low">
+                </div>
+                <div class="service-feature-copy">
+                  <h2>Betonpumpendienst</h2>
+                  <p>Fördern und Einbringen von Beton direkt am Einsatzort.</p>
+                </div>
+              </article>
+
+              <article class="service-feature service-feature-reverse">
+                <div class="service-feature-copy">
+                  <h2>Frischbetontransporte</h2>
+                  <p>Frischbetontransporte mit Fahrmischern zwischen Betonwerk und Baustelle.</p>
+                </div>
+                <div class="service-visual service-visual-fade-left">
+                  <img src="assets/leistungen/frischbetontransport.png" alt="RN Transporte Fahrmischer beim Frischbetontransport" loading="lazy" decoding="async" fetchpriority="low">
+                </div>
+              </article>
+
+              <article class="service-text-row">
+                <h2>Kiestransporte</h2>
+                <p>Transport von Kies und Schüttgütern zum jeweiligen Einsatzort.</p>
+              </article>
+
+              <div class="page-cta service-page-cta">
+                <p>Sie möchten einen Einsatz oder Transport abstimmen?</p>
+                <a href="kontakt.html">Projekt anfragen →</a>
+              </div>
+            </div>
+          </section>
+          '''
+
+          services_path = Path("leistungen.html")
+          services_html = services_path.read_text(encoding="utf-8")
+          services_html, replaced = re.subn(
+              r'<section class="services page-services">.*?</section>',
+              service_markup.strip(),
+              services_html,
+              count=1,
+              flags=re.S,
+          )
+          if replaced != 1:
+              raise SystemExit("RN service editorial replacement failed")
+
+          service_style = r'''<style id="rn-service-editorial-style">
+          .service-editorial{padding:72px 0 96px;background:#fff}
+          .service-editorial-list{max-width:1220px}
+          .service-feature{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,.78fr);align-items:center;min-height:440px;border-bottom:1px solid #e4e5e6}
+          .service-feature-reverse{grid-template-columns:minmax(300px,.78fr) minmax(0,1.22fr)}
+          .service-visual{position:relative;min-width:0;aspect-ratio:16/10;overflow:hidden;background:#f1f2f2}
+          .service-visual img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+          .service-visual:after{content:"";position:absolute;inset:0;pointer-events:none}
+          .service-visual-fade-right:after{background:linear-gradient(90deg,rgba(255,255,255,0) 68%,rgba(255,255,255,.38) 82%,#fff 100%)}
+          .service-visual-fade-left:after{background:linear-gradient(270deg,rgba(255,255,255,0) 68%,rgba(255,255,255,.38) 82%,#fff 100%)}
+          .service-feature-copy{position:relative;z-index:2;padding:48px 0 48px 58px;background:#fff}
+          .service-feature-reverse .service-feature-copy{padding:48px 58px 48px 0}
+          .service-feature-copy h2,.service-text-row h2{margin:0;color:var(--ink);font-size:clamp(30px,3.1vw,46px);line-height:1.06;letter-spacing:-.045em;font-weight:530}
+          .service-feature-copy p{margin:17px 0 0;max-width:430px;color:#686c70;font-size:15px;line-height:1.72}
+          .service-text-row{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:68px 0;border-bottom:1px solid #e4e5e6}
+          .service-text-row p{margin:0;max-width:520px;color:#686c70;font-size:15px;line-height:1.72}
+          .service-page-cta{margin-top:42px}
+          @media(max-width:900px){
+            .service-editorial{padding:28px 0 70px}
+            .service-feature,.service-feature-reverse{grid-template-columns:1fr;min-height:0;padding:0;border-bottom:1px solid #e4e5e6}
+            .service-feature-reverse .service-feature-copy{order:2}
+            .service-feature-reverse .service-visual{order:1}
+            .service-visual{aspect-ratio:16/10;margin:0 -24px;width:calc(100% + 48px)}
+            .service-visual-fade-right:after,.service-visual-fade-left:after{background:linear-gradient(180deg,rgba(255,255,255,0) 70%,rgba(255,255,255,.35) 84%,#fff 100%)}
+            .service-feature-copy,.service-feature-reverse .service-feature-copy{padding:26px 0 42px}
+            .service-feature-copy h2,.service-text-row h2{font-size:31px}
+            .service-feature-copy p{margin-top:12px}
+            .service-text-row{grid-template-columns:1fr;gap:13px;padding:42px 0}
+            .service-page-cta{margin-top:34px}
+          }
+          </style>'''
+          services_html = services_html.replace("</head>", service_style + "\n</head>", 1)
+          services_path.write_text(services_html, encoding="utf-8")
 
           # Cache-proof mobile navigation. This lives inside every page so an
           # old Safari cache of premium.css can no longer break the menu.
@@ -89,7 +173,7 @@ jobs:
           for filename in ("index.html", "leistungen.html", "unternehmen.html", "karriere.html", "kontakt.html"):
               path = Path(filename)
               html = path.read_text(encoding="utf-8")
-              html = html.replace('href="assets/premium.css"', 'href="assets/premium.css?v=86"')
+              html = html.replace('href="assets/premium.css"', 'href="assets/premium.css?v=87"')
               html = html.replace("</head>", mobile_fix + "\n</head>", 1)
               path.write_text(html, encoding="utf-8")
           PY
@@ -100,6 +184,8 @@ jobs:
           test -f assets/logo.webp
           test -f assets/premium.css
           test -f assets/favicon-rn.svg
+          test -f assets/leistungen/betonpumpendienst.png
+          test -f assets/leistungen/frischbetontransport.png
           test -f index.html
           test -f leistungen.html
           test -f unternehmen.html
@@ -111,7 +197,7 @@ jobs:
           grep -q 'src="rn_hero_final.png"' index.html
           grep -q '>MENÜ<' index.html
           grep -q 'id="rn-mobile-menu-fix"' index.html
-          grep -q 'assets/premium.css?v=86' index.html
+          grep -q 'assets/premium.css?v=87' index.html
           grep -q 'height:calc(100dvh - 74px)' index.html
           grep -q 'header.open .menu .menu-word{transform:none!important' index.html
           grep -q 'header.open .nav{display:flex!important' index.html
@@ -120,13 +206,21 @@ jobs:
           ! grep -Eq '<span>0[1-4]</span>' index.html
 
           grep -q 'aria-current="page">Leistungen</a>' leistungen.html
+          grep -q 'assets/premium.css?v=87' leistungen.html
+          grep -q 'id="rn-service-editorial-style"' leistungen.html
+          grep -q 'class="service-editorial"' leistungen.html
+          grep -q 'assets/leistungen/betonpumpendienst.png' leistungen.html
+          grep -q 'assets/leistungen/frischbetontransport.png' leistungen.html
+          grep -q 'loading="lazy" decoding="async" fetchpriority="low"' leistungen.html
+          grep -q '<h2>Kiestransporte</h2>' leistungen.html
+          ! grep -q 'Baustelleneinsatz.png' leistungen.html
+          ! grep -q 'class="service-grid"' leistungen.html
+
           grep -q 'aria-current="page">Unternehmen</a>' unternehmen.html
           grep -q 'aria-current="page">Karriere</a>' karriere.html
           grep -q 'aria-current="page">Kontakt</a>' kontakt.html
-          grep -q 'assets/premium.css?v=86' leistungen.html
           grep -q 'id="rn-mobile-menu-fix"' kontakt.html
 
-          grep -q 'Betonpumpendienst' leistungen.html
           grep -q 'Seit 2010 steht RN Transporte' unternehmen.html
           grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
           grep -q '<span>C/CE</span>' karriere.html
