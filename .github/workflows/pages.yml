@@ -59,6 +59,9 @@ jobs:
       - name: Apply premium finish
         run: python premium_finish.py
 
+      - name: Finalize direct contact page
+        run: python contact_finish.py
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -77,6 +80,7 @@ jobs:
           test -f premium_pass.py
           test -f wow_pass.py
           test -f premium_finish.py
+          test -f contact_finish.py
           test -f index.html
           test -f leistungen.html
           test -f referenzen.html
@@ -164,11 +168,14 @@ jobs:
           grep -q 'id="rn-premium-pass"' kontakt.html
           grep -q 'id="rn-wow-pass"' kontakt.html
           grep -q 'id="rn-premium-finish"' kontakt.html
+          grep -q 'id="rn-contact-final"' kontakt.html
           grep -q 'mailto:ntorwesten@web.de' kontakt.html
           grep -q '>ntorwesten@web.de</a>' kontakt.html
           grep -q 'E-Mail →' kontakt.html
           grep -q '0173 72 75 165' kontakt.html
           grep -q 'Lohweg 55a' kontakt.html
+          ! grep -q 'Wir sprechen über Ihren Einsatz.' kontakt.html
+          ! grep -q 'Kurze Wege und direkte Abstimmung:' kontakt.html
 
           grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/referenzen.html</loc>' sitemap.xml
@@ -185,7 +192,7 @@ jobs:
           sed -i 's/RN Torwesten Transporte · Salzkotten-Niederntudorf/RN Torwesten Transporte · Salzkotten/g' impressum.html datenschutz.html
 
           rm -rf .github leistungen
-          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py premium_pass.py wow_pass.py premium_finish.py
+          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py premium_pass.py wow_pass.py premium_finish.py contact_finish.py
           rm -f assets/__upload_test.txt assets/favicon.svg assets/logo.svg assets/rn-hero.svg assets/rn-hero.webp
           rm -rf assets/hero assets/hero-final assets/hero-final12 assets/hero-hq assets/hero-recovered assets/rn-hero-build assets/rn-hero-clean
 
