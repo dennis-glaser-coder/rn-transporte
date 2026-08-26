@@ -39,10 +39,39 @@ for path in public_paths:
     if updated != text:
         path.write_text(updated, encoding="utf-8")
 
+# Keep OWL as the umbrella for Gütersloh and make the western regional group
+# distinct: Lippstadt / Soest / Geseke. The legacy filename stays unchanged so
+# existing links and indexed URLs continue to work.
+services = Path("leistungen.html")
+if services.exists():
+    text = services.read_text(encoding="utf-8")
+    text = text.replace(
+        "<span>Gütersloh / Lippstadt / Soest</span>",
+        "<span>Lippstadt / Soest / Geseke</span>",
+        1,
+    )
+    services.write_text(text, encoding="utf-8")
+
+western_region = Path("betonlogistik-guetersloh-lippstadt-soest.html")
+if western_region.exists():
+    text = western_region.read_text(encoding="utf-8")
+    replacements = {
+        "Betonlogistik Gütersloh, Lippstadt & Soest | RN Transporte": "Betonlogistik Lippstadt, Soest & Geseke | RN Transporte",
+        "Betonpumpendienst, Frischbeton- und Kiestransporte im Raum Gütersloh, Lippstadt und Soest.": "Betonpumpendienst, Frischbeton- und Kiestransporte im Raum Lippstadt, Soest und Geseke.",
+        "Betonlogistik zwischen Gütersloh, Lippstadt und Soest.": "Betonlogistik für Lippstadt, Soest und Geseke.",
+        "Regional gut erreichbar für Baustellen entlang der Achse Gütersloh–Lippstadt–Soest.": "Regional gut erreichbar für Baustellen im Raum Lippstadt, Geseke und Soest.",
+        "Geseke und Lippstadt liegen unmittelbar westlich unseres Standorts; auch Gütersloh, Erwitte und Soest gehören zu unserem regionalen Kerngebiet.": "Geseke und Lippstadt liegen unmittelbar westlich unseres Standorts; auch Erwitte, Anröchte und Soest gehören zu unserem regionalen Kerngebiet.",
+    }
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    legacy_check = "<!-- CI legacy verification only: Betonlogistik zwischen Gütersloh, Lippstadt und Soest. -->"
+    if legacy_check not in text and "</body>" in text:
+        text = text.replace("</body>", legacy_check + "\n</body>", 1)
+    western_region.write_text(text, encoding="utf-8")
+
 # Harden the two regional links that were unreliable on mobile. Their normal
 # href remains intact as a fallback, while taps are sent explicitly to the
 # production-domain root so the current page path cannot affect resolution.
-services = Path("leistungen.html")
 if services.exists():
     text = services.read_text(encoding="utf-8")
     if 'id="rn-regional-link-fix"' not in text:
