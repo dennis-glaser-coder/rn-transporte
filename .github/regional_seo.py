@@ -1,3 +1,4 @@
+import re
 import runpy
 import subprocess
 import sys
@@ -110,3 +111,23 @@ if sitemap.exists():
 for path in Path(".").glob("*.html"):
     if OLD_SITE in path.read_text(encoding="utf-8"):
         raise SystemExit(f"RN domain finish old URL remains in {path}")
+
+# Final site-wide sanity check: every local HTML href and local src referenced
+# by a generated public page must resolve to a file in the build artifact.
+def local_target(value: str):
+    value = value.strip()
+    if not value or value.startswith(("#", "http://", "https://", "mailto:", "tel:", "javascript:", "data:")):
+        return None
+    clean = value.split("#", 1)[0].split("?", 1)[0].lstrip("/")
+    return Path(clean) if clean else None
+
+for html_path in Path(".").glob("*.html"):
+    html = html_path.read_text(encoding="utf-8")
+    for attr, value in re.findall(r'\b(href|src)="([^"]+)"', html, flags=re.I):
+        target = local_target(value)
+        if target is None:
+            continue
+        if attr.lower() == "href" and not str(target).lower().endswith(".html"):
+            continue
+        if not target.exists():
+            raise SystemExit(f"RN broken local {attr} in {html_path}: {value}")
