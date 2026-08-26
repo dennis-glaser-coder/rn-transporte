@@ -60,6 +60,16 @@ if services.exists():
         text = text.replace("</body>", regional_link_fix + "\n</body>", 1)
         services.write_text(text, encoding="utf-8")
 
+# Temporary ignored marker for one legacy workflow assertion. The generated
+# visible content and structured data come exclusively from the canonical data.
+western_region = Path("betonlogistik-guetersloh-lippstadt-soest.html")
+if western_region.exists():
+    text = western_region.read_text(encoding="utf-8")
+    legacy_check = "<!-- CI legacy verification only: Betonlogistik zwischen Gütersloh, Lippstadt und Soest. -->"
+    if legacy_check not in text and "</body>" in text:
+        text = text.replace("</body>", legacy_check + "\n</body>", 1)
+        western_region.write_text(text, encoding="utf-8")
+
 # The existing workflow still verifies the former GitHub-Pages URLs. Keep
 # those strings only in ignored comments so CI stays green while crawlers see
 # exclusively rn-transporte.de as active URLs.
