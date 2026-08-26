@@ -56,6 +56,9 @@ jobs:
       - name: Apply visible premium wow
         run: python wow_pass.py
 
+      - name: Apply premium finish
+        run: python premium_finish.py
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -73,6 +76,7 @@ jobs:
           test -f references_page.py
           test -f premium_pass.py
           test -f wow_pass.py
+          test -f premium_finish.py
           test -f index.html
           test -f leistungen.html
           test -f referenzen.html
@@ -90,7 +94,9 @@ jobs:
           grep -q 'id="rn-premium-pass"' index.html
           grep -q 'id="rn-premium-motion"' index.html
           grep -q 'id="rn-wow-pass"' index.html
+          grep -q 'id="rn-premium-finish"' index.html
           grep -q 'background:#f1f1ee' index.html
+          grep -q 'content:"RN"' index.html
           grep -q '<a href="tel:+491737275165">Anrufen</a>' index.html
           ! grep -q '<a href="tel:+491737275165">0173 72 75 165</a>' index.html
           grep -q 'class="hero-email" href="mailto:ntorwesten@web.de" aria-label="E-Mail schreiben"' index.html
@@ -107,7 +113,9 @@ jobs:
           grep -q 'id="rn-kies-image-style"' leistungen.html
           grep -q 'id="rn-premium-pass"' leistungen.html
           grep -q 'id="rn-wow-pass"' leistungen.html
+          grep -q 'id="rn-premium-finish"' leistungen.html
           grep -q '.page-hero h1{color:#fff' leistungen.html
+          grep -q 'box-shadow:0 0 0 100vmax #f1f1ee' leistungen.html
           grep -q 'assets/leistungen/betonpumpendienst.png' leistungen.html
           grep -q 'assets/leistungen/frischbetontransport.png' leistungen.html
           grep -q 'assets/leistungen/Kiestransporte.png' leistungen.html
@@ -122,6 +130,7 @@ jobs:
           grep -q 'id="rn-references-style"' referenzen.html
           grep -q 'id="rn-premium-pass"' referenzen.html
           grep -q 'id="rn-wow-pass"' referenzen.html
+          grep -q 'id="rn-premium-finish"' referenzen.html
           grep -q 'grid-template-columns:repeat(12,minmax(0,1fr))' referenzen.html
           grep -q 'Im Einsatz für unsere Kunden.' referenzen.html
           grep -q 'assets/leistungen/betonpumpendienst.png' referenzen.html
@@ -134,6 +143,7 @@ jobs:
           grep -q 'id="rn-company-editorial-style"' unternehmen.html
           grep -q 'id="rn-premium-pass"' unternehmen.html
           grep -q 'id="rn-wow-pass"' unternehmen.html
+          grep -q 'id="rn-premium-finish"' unternehmen.html
           grep -q 'assets/leistungen/Baustelleneinsatz.png' unternehmen.html
           grep -q 'alt="RN Transporte im Baustelleneinsatz"' unternehmen.html
           grep -q 'loading="lazy" decoding="async" fetchpriority="low"' unternehmen.html
@@ -144,6 +154,7 @@ jobs:
           grep -q 'aria-current="page">Karriere</a>' karriere.html
           grep -q 'id="rn-premium-motion"' karriere.html
           grep -q 'id="rn-wow-pass"' karriere.html
+          grep -q 'id="rn-premium-finish"' karriere.html
           grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
           grep -q '<span>C/CE</span>' karriere.html
 
@@ -152,6 +163,7 @@ jobs:
           grep -q 'id="rn-contact-email-style"' kontakt.html
           grep -q 'id="rn-premium-pass"' kontakt.html
           grep -q 'id="rn-wow-pass"' kontakt.html
+          grep -q 'id="rn-premium-finish"' kontakt.html
           grep -q 'mailto:ntorwesten@web.de' kontakt.html
           grep -q '>ntorwesten@web.de</a>' kontakt.html
           grep -q 'E-Mail →' kontakt.html
@@ -173,7 +185,7 @@ jobs:
           sed -i 's/RN Torwesten Transporte · Salzkotten-Niederntudorf/RN Torwesten Transporte · Salzkotten/g' impressum.html datenschutz.html
 
           rm -rf .github leistungen
-          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py premium_pass.py wow_pass.py
+          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py premium_pass.py wow_pass.py premium_finish.py
           rm -f assets/__upload_test.txt assets/favicon.svg assets/logo.svg assets/rn-hero.svg assets/rn-hero.webp
           rm -rf assets/hero assets/hero-final assets/hero-final12 assets/hero-hq assets/hero-recovered assets/rn-hero-build assets/rn-hero-clean
 
