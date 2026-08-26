@@ -13,13 +13,6 @@ PRODUCTION_SITE = "https://rn-transporte.de/"
 OLD_SITE = "https://dennis-glaser-coder.github.io/rn-transporte/"
 
 
-def replace_meta(html: str, pattern: str, replacement: str, label: str) -> str:
-    updated, count = re.subn(pattern, replacement, html, count=1, flags=re.S)
-    if count != 1:
-        raise SystemExit(f"RN final {label} not found exactly once")
-    return updated
-
-
 def rewrite_jsonld(html: str, transform):
     matches = list(re.finditer(r'<script type="application/ld\+json">(.*?)</script>', html, re.S))
     for match in reversed(matches):
@@ -28,16 +21,12 @@ def rewrite_jsonld(html: str, transform):
         except Exception:
             continue
         updated = transform(data)
-        if updated is None:
-            continue
         script = '<script type="application/ld+json">' + json.dumps(updated, ensure_ascii=False, separators=(",", ":")) + '</script>'
         html = html[:match.start()] + script + html[match.end():]
     return html
 
 
-# --- Regional grouping: no overlapping OWL umbrella in the visible list. ---
-# Paderborn and Höxter already have their own regional entries, so the second
-# group is deliberately the concrete Bielefeld/Gütersloh corridor.
+# --- Regional grouping: use concrete, non-overlapping labels in the hub. ---
 bielefeld_path = Path("betonlogistik-bielefeld-owl.html")
 bielefeld = bielefeld_path.read_text(encoding="utf-8")
 replacements = {
@@ -57,8 +46,7 @@ bielefeld = bielefeld.replace('<span>Ostwestfalen-Lippe</span>', '')
 def refine_bielefeld_schema(data):
     graph = data.get("@graph") if isinstance(data, dict) else None
     if not isinstance(graph, list):
-        return None
-    changed = False
+        return data
     for node in graph:
         if not isinstance(node, dict):
             continue
@@ -71,13 +59,11 @@ def refine_bielefeld_schema(data):
                 {"@type": "City", "name": "Herford"},
                 {"@type": "City", "name": "Detmold"},
             ]
-            changed = True
         if node.get("@type") == "BreadcrumbList":
             for item in node.get("itemListElement", []):
                 if isinstance(item, dict) and "Bielefeld" in str(item.get("name", "")):
                     item["name"] = "Einsatzgebiet Bielefeld & Gütersloh"
-                    changed = True
-    return data if changed else None
+    return data
 
 
 bielefeld = rewrite_jsonld(bielefeld, refine_bielefeld_schema)
@@ -101,70 +87,52 @@ for path in Path(".").glob("*.html"):
     text = re.sub(r'href="(betonlogistik-[a-z0-9-]+\.html)"', r'href="/\1"', text, flags=re.I)
     path.write_text(text, encoding="utf-8")
 
-# --- Service consistency: Holztransporte are part of the actual offer. ---
-services_path = Path("leistungen.html")
-services = services_path.read_text(encoding="utf-8")
-services_title = "Betonpumpendienst, Frischbeton-, Kies- & Holztransporte | RN Transporte"
-services_desc = "Betonpumpendienst, Frischbeton-, Kies-, Baustoff- und Holztransporte von RN Transporte aus Salzkotten. Zuverlässig für Baustellen und Auftraggeber – deutschlandweit im Einsatz."
-services = replace_meta(services, r'<title>.*?</title>', f'<title>{services_title}</title>', "services title")
-services = replace_meta(services, r'<meta name="description" content="[^"]*">', f'<meta name="description" content="{services_desc}">', "services description")
-services = replace_meta(services, r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="{services_title}">', "services OG title")
-services = replace_meta(services, r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{services_desc}">', "services OG description")
-services = replace_meta(services, r'<meta name="twitter:title" content="[^"]*">', f'<meta name="twitter:title" content="{services_title}">', "services Twitter title")
-services = replace_meta(services, r'<meta name="twitter:description" content="[^"]*">', f'<meta name="twitter:description" content="{services_desc}">', "services Twitter description")
-if 'id="holztransporte"' not in services:
-    raise SystemExit("RN final Holztransporte section missing")
-services_path.write_text(services, encoding="utf-8")
+# Holztransporte came from an older company description and are not treated as
+# a confirmed current service. Remove those legacy references from the public
+# artifact instead of inferring a service from old copy.
+WOOD_TEXT_REPLACEMENTS = {
+    "Unser Leistungsspektrum umfasst den Transport von Frischbeton mit Fahrmischern, Baustofftransporte mit Sattelkippern, Holztransporte sowie das fachgerechte Fördern und Pumpen von Beton mit unseren Betonpumpen.":
+        "Unser Leistungsspektrum umfasst den Transport von Frischbeton mit Fahrmischern, Baustofftransporte mit Sattelkippern sowie das fachgerechte Fördern und Pumpen von Beton mit unseren Betonpumpen.",
+    "Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte aus Salzkotten. Bundesweit im Einsatz.":
+        "Betonpumpendienst, Frischbeton-, Baustoff- und Kiestransporte aus Salzkotten. Bundesweit im Einsatz.",
+    "RN Transporte aus Salzkotten: Betonpumpendienst, Frischbeton-, Baustoff-, Kies- und Holztransporte. Bundesweit im Einsatz – jetzt Projekt anfragen.":
+        "RN Transporte aus Salzkotten: Betonpumpendienst, Frischbeton-, Baustoff- und Kiestransporte. Bundesweit im Einsatz – jetzt Projekt anfragen.",
+}
 
-# Keep the homepage overview aligned with the complete service offer without
-# making the hero line longer.
-home = Path("index.html")
-home_html = home.read_text(encoding="utf-8")
-home_html = home_html.replace(
-    "Betonpumpendienst, Frischbeton- und Kiestransporte.</p>",
-    "Betonpumpendienst, Frischbeton-, Kies- und Holztransporte.</p>",
-    1,
-)
-home.write_text(home_html, encoding="utf-8")
 
-# Regional pages link to all four service categories. Holztransporte use the
-# anchored service overview until a dedicated Holztransport page/photo exists.
-regional_service_old = (
-    '<div class="regional-service-links"><a href="betonpumpendienst.html">Betonpumpendienst</a>'
-    '<a href="frischbetontransporte.html">Frischbetontransporte</a>'
-    '<a href="kiestransporte.html">Kiestransporte</a></div>'
-)
-regional_service_new = (
-    '<div class="regional-service-links"><a href="/betonpumpendienst.html">Betonpumpendienst</a>'
-    '<a href="/frischbetontransporte.html">Frischbetontransporte</a>'
-    '<a href="/kiestransporte.html">Kiestransporte</a>'
-    '<a href="/leistungen.html#holztransporte">Holztransporte</a></div>'
-)
-for path in Path(".").glob("betonlogistik-*.html"):
+def is_wood_offer(value):
+    if not isinstance(value, dict) or value.get("@type") != "Offer":
+        return False
+    offered = value.get("itemOffered")
+    return isinstance(offered, dict) and offered.get("name") == "Holztransporte"
+
+
+def clean_wood_json(value):
+    if isinstance(value, list):
+        return [clean_wood_json(item) for item in value if not is_wood_offer(item)]
+    if isinstance(value, dict):
+        return {key: clean_wood_json(item) for key, item in value.items()}
+    if isinstance(value, str):
+        for old, new in WOOD_TEXT_REPLACEMENTS.items():
+            value = value.replace(old, new)
+    return value
+
+
+for path in Path(".").glob("*.html"):
     text = path.read_text(encoding="utf-8")
-    if regional_service_old not in text:
-        raise SystemExit(f"RN final regional service links missing: {path}")
-    text = text.replace(regional_service_old, regional_service_new, 1)
-    text = text.replace(
-        '.regional-service-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));',
-        '.regional-service-links{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));',
-        1,
+    for old, new in WOOD_TEXT_REPLACEMENTS.items():
+        text = text.replace(old, new)
+    text = re.sub(
+        r'\s*<article class="service-text-row service-text-row-wood" id="holztransporte">.*?</article>\s*',
+        "\n",
+        text,
+        count=1,
+        flags=re.S,
     )
+    text = rewrite_jsonld(text, clean_wood_json)
     path.write_text(text, encoding="utf-8")
 
 # Apply the uploaded social preview after final page content is established.
-try:
-    import PIL  # noqa: F401
-except ModuleNotFoundError:
-    subprocess.check_call([
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "--disable-pip-version-check",
-        "--quiet",
-        "Pillow",
-    ])
 subprocess.check_call([sys.executable, ".github/social_preview.py"])
 
 # Older build stages still emit the former GitHub Pages base URL. Normalize it
@@ -177,7 +145,8 @@ for path in public_paths:
     text = text.replace(OLD_SITE, PRODUCTION_SITE)
     path.write_text(text, encoding="utf-8")
 
-# --- Final validation: no stale labels, no old host, no broken local targets. ---
+# --- Final validation: no stale labels, no unconfirmed services, no bad URLs. ---
+services_path = Path("leistungen.html")
 services = services_path.read_text(encoding="utf-8")
 for label in (
     "Paderborn / Salzkotten",
@@ -206,6 +175,8 @@ for html_path in Path(".").glob("*.html"):
     html = html_path.read_text(encoding="utf-8")
     if OLD_SITE in html:
         raise SystemExit(f"RN final old URL remains in {html_path}")
+    if "Holztransporte" in html:
+        raise SystemExit(f"RN unconfirmed Holztransporte reference remains in {html_path}")
     for attr, value in re.findall(r'\b(href|src)="([^"]+)"', html, flags=re.I):
         target = local_target(value)
         if target is None:
