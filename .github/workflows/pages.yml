@@ -36,7 +36,7 @@ jobs:
       - name: Apply RN postbuild refinements
         run: python postbuild.py
 
-      - name: Add Kies and Holz services
+      - name: Add Kiestransporte image
         run: python kies_image.py
 
       - name: Refine company page
@@ -66,7 +66,7 @@ jobs:
       - name: Apply SEO finish
         run: python .github/seo_finish.py
 
-      - name: Finalize regions, services and public URLs
+      - name: Finalize regions and public URLs
         run: python .github/regional_seo.py
 
       - name: Verify public RN site
@@ -116,6 +116,8 @@ jobs:
               text = path.read_text(encoding="utf-8")
               if old_host in text:
                   raise SystemExit(f"Old GitHub Pages host remains in {path}")
+              if "Holztransporte" in text:
+                  raise SystemExit(f"Unconfirmed Holztransporte reference remains in {path}")
 
           index = Path("index.html").read_text(encoding="utf-8")
           for token in (
@@ -123,7 +125,6 @@ jobs:
               'href="referenzen.html">Referenzen</a>',
               'id="rn-mobile-menu-fix"',
               'id="rn-premium-finish"',
-              'Betonpumpendienst, Frischbeton-, Kies- und Holztransporte.',
           ):
               if token not in index:
                   raise SystemExit(f"Homepage verification failed: {token}")
@@ -133,8 +134,6 @@ jobs:
               'id="rn-service-editorial-style"',
               'id="rn-kies-image-style"',
               'id="rn-regional-focus"',
-              'id="holztransporte"',
-              '<h2>Holztransporte</h2>',
               'Paderborn / Salzkotten',
               'Bielefeld / Gütersloh',
               'Lippstadt / Soest / Geseke',
@@ -167,13 +166,12 @@ jobs:
                   'Deutschlandweit nach Abstimmung',
                   '"@type":"Service"',
                   '"@type":"BreadcrumbList"',
-                  'href="/leistungen.html#holztransporte">Holztransporte</a>',
               ):
                   if token not in text:
                       raise SystemExit(f"Regional page verification failed in {filename}: {token}")
 
           company = Path("unternehmen.html").read_text(encoding="utf-8")
-          for token in ('Seit 2010 steht RN Transporte', 'Holztransporte', 'Kontakt aufnehmen →'):
+          for token in ('Seit 2010 steht RN Transporte', 'Kontakt aufnehmen →'):
               if token not in company:
                   raise SystemExit(f"Company page verification failed: {token}")
 
