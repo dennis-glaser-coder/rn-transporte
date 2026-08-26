@@ -16,6 +16,13 @@ if not hero_match:
     raise SystemExit("RN hero contact row not found")
 
 inner = hero_match.group(2)
+
+# Keep the hero compact: show "Anrufen" instead of the full mobile number.
+phone_link = '<a href="tel:+491737275165">0173 72 75 165</a>'
+if phone_link not in inner:
+    raise SystemExit("RN hero phone link not found")
+inner = inner.replace(phone_link, '<a href="tel:+491737275165">Anrufen</a>', 1)
+
 if f'mailto:{CONTACT_EMAIL}' not in inner:
     mail_icon = (
         f'<a class="hero-email" href="mailto:{CONTACT_EMAIL}" aria-label="E-Mail schreiben">'
@@ -25,7 +32,8 @@ if f'mailto:{CONTACT_EMAIL}' not in inner:
         '</svg></a>'
     )
     inner += mail_icon
-    html = html[:hero_match.start()] + hero_match.group(1) + inner + hero_match.group(3) + html[hero_match.end():]
+
+html = html[:hero_match.start()] + hero_match.group(1) + inner + hero_match.group(3) + html[hero_match.end():]
 
 hero_email_style = r'''<style id="rn-hero-email-style">
 .hero-contact{flex-wrap:wrap;row-gap:12px}
