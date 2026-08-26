@@ -65,6 +65,9 @@ jobs:
       - name: Apply SEO finish
         run: python .github/seo_finish.py
 
+      - name: Apply regional SEO focus
+        run: python .github/regional_seo.py
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -85,6 +88,7 @@ jobs:
           test -f premium_finish.py
           test -f contact_finish.py
           test -f .github/seo_finish.py
+          test -f .github/regional_seo.py
           test -f index.html
           test -f leistungen.html
           test -f referenzen.html
@@ -94,6 +98,12 @@ jobs:
           test -f betonpumpendienst.html
           test -f frischbetontransporte.html
           test -f kiestransporte.html
+          test -f betonlogistik-paderborn-salzkotten.html
+          test -f betonlogistik-bielefeld-owl.html
+          test -f betonlogistik-guetersloh-lippstadt-soest.html
+          test -f betonlogistik-hoexter-warburg.html
+          test -f betonlogistik-kassel-nordhessen.html
+          test -f betonlogistik-suedniedersachsen.html
           test -f robots.txt
           test -f sitemap.xml
 
@@ -138,6 +148,11 @@ jobs:
           grep -q 'href="frischbetontransporte.html"' leistungen.html
           grep -q 'href="kiestransporte.html"' leistungen.html
           grep -q 'id="rn-seo-service-links"' leistungen.html
+          grep -q 'id="rn-regional-focus"' leistungen.html
+          grep -q 'Regionales Kerngebiet' leistungen.html
+          grep -q 'rund 150 km um Salzkotten' leistungen.html
+          grep -q 'href="betonlogistik-paderborn-salzkotten.html"' leistungen.html
+          grep -q 'href="betonlogistik-kassel-nordhessen.html"' leistungen.html
           ! grep -q 'class="service-text-row"' leistungen.html
           ! grep -q 'Baustelleneinsatz.png' leistungen.html
 
@@ -196,20 +211,44 @@ jobs:
           for page in betonpumpendienst.html frischbetontransporte.html kiestransporte.html; do
             grep -q 'aria-current="page">Leistungen</a>' "$page"
             grep -q 'id="rn-seo-service-page"' "$page"
+            grep -q 'id="rn-service-regional-focus"' "$page"
             grep -q '"@type":"Service"' "$page"
             grep -q '"@type":"BreadcrumbList"' "$page"
             grep -q 'Projekt anfragen →' "$page"
             grep -q 'Einsatzgebiet</strong>Deutschlandweit' "$page"
+            grep -q 'Regionales Kerngebiet:' "$page"
           done
           grep -q 'Betonpumpendienst für Baustellen und Betonwerke.' betonpumpendienst.html
           grep -q 'Frischbetontransporte zwischen Betonwerk und Baustelle.' frischbetontransporte.html
           grep -q 'Kiestransporte und Schüttgüter für Baustellen.' kiestransporte.html
+
+          for page in betonlogistik-paderborn-salzkotten.html betonlogistik-bielefeld-owl.html betonlogistik-guetersloh-lippstadt-soest.html betonlogistik-hoexter-warburg.html betonlogistik-kassel-nordhessen.html betonlogistik-suedniedersachsen.html; do
+            grep -q 'aria-current="page">Leistungen</a>' "$page"
+            grep -q 'id="rn-regional-page"' "$page"
+            grep -q 'Rund 150 km um Salzkotten' "$page"
+            grep -q 'Deutschlandweit nach Abstimmung' "$page"
+            grep -q '"@type":"Service"' "$page"
+            grep -q '"@type":"BreadcrumbList"' "$page"
+            grep -q 'Einsatz anfragen →' "$page"
+          done
+          grep -q 'Betonlogistik für Paderborn und den Kreis.' betonlogistik-paderborn-salzkotten.html
+          grep -q 'Betonlogistik für Bielefeld und OWL.' betonlogistik-bielefeld-owl.html
+          grep -q 'Betonlogistik zwischen Gütersloh, Lippstadt und Soest.' betonlogistik-guetersloh-lippstadt-soest.html
+          grep -q 'Betonlogistik für Höxter und Warburg.' betonlogistik-hoexter-warburg.html
+          grep -q 'Betonlogistik für Kassel und Nordhessen.' betonlogistik-kassel-nordhessen.html
+          grep -q 'Betonlogistik für Südniedersachsen.' betonlogistik-suedniedersachsen.html
 
           grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/referenzen.html</loc>' sitemap.xml
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonpumpendienst.html</loc>' sitemap.xml
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/frischbetontransporte.html</loc>' sitemap.xml
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/kiestransporte.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-paderborn-salzkotten.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-bielefeld-owl.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-guetersloh-lippstadt-soest.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-hoexter-warburg.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-kassel-nordhessen.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonlogistik-suedniedersachsen.html</loc>' sitemap.xml
           grep -q 'noindex,follow' impressum.html
           grep -q 'noindex,follow' datenschutz.html
           grep -q 'id="rn-legal-premium"' impressum.html
@@ -236,6 +275,12 @@ jobs:
           test -f betonpumpendienst.html
           test -f frischbetontransporte.html
           test -f kiestransporte.html
+          test -f betonlogistik-paderborn-salzkotten.html
+          test -f betonlogistik-bielefeld-owl.html
+          test -f betonlogistik-guetersloh-lippstadt-soest.html
+          test -f betonlogistik-hoexter-warburg.html
+          test -f betonlogistik-kassel-nordhessen.html
+          test -f betonlogistik-suedniedersachsen.html
           test -f impressum.html
           test -f datenschutz.html
           test ! -e leistungen/index.html
