@@ -57,6 +57,19 @@ jobs:
           css_path.write_text(css, encoding="utf-8")
           PY
 
+      - name: Fix mobile menu on iOS
+        run: |
+          cat >> assets/premium.css <<'CSS'
+
+          /* iOS Safari mobile navigation fix */
+          @media(max-width:900px){
+            header.open{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+            header.open .menu .menu-word{transform:none!important;opacity:1!important}
+            header.open .menu .menu-bars{transform:none!important;opacity:1!important}
+            header.open .nav{display:flex!important;position:absolute!important;top:74px!important;left:0!important;right:0!important;bottom:auto!important;width:100vw!important;height:calc(100dvh - 74px)!important;min-height:calc(100vh - 74px)!important;z-index:999!important;flex-direction:column!important;justify-content:flex-start!important;gap:0!important;padding:26px 24px calc(28px + env(safe-area-inset-bottom))!important;background:#fff!important;border-top:1px solid #ededed!important;box-shadow:none!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important}
+          }
+          CSS
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -86,6 +99,9 @@ jobs:
           ! grep -Eq '<span>0[1-4]</span>' index.html
           ! grep -q 'id="unternehmen"' index.html
           ! grep -q 'id="karriere"' index.html
+          grep -q 'iOS Safari mobile navigation fix' assets/premium.css
+          grep -q 'height:calc(100dvh - 74px)' assets/premium.css
+          grep -q 'header.open .menu .menu-word{transform:none!important' assets/premium.css
 
           grep -q 'aria-current="page">Leistungen</a>' leistungen.html
           grep -q 'Betonpumpendienst' leistungen.html
