@@ -78,6 +78,7 @@ wow_style = r'''<style id="rn-wow-pass">
 }
 
 @media(max-width:900px){
+  html,body{max-width:100%;overflow-x:hidden!important}
   .page-hero{padding:64px 0 60px!important}
   .page-hero:after{right:-30%;bottom:-28%;width:75%}
   .page-hero-grid>div:last-child{padding-left:0;border-left:0}
@@ -91,6 +92,8 @@ wow_style = r'''<style id="rn-wow-pass">
   .home-link-grid{grid-template-columns:1fr!important;gap:1px!important}
   .home-link-card:nth-child(n){grid-column:1/-1!important;min-height:218px!important;padding:28px 25px!important}
   .home-link-card h3{font-size:31px!important}
+  .service-editorial,.service-editorial-list,.service-feature{max-width:100%;min-width:0}
+  .service-visual{margin-left:-16px!important;margin-right:-16px!important;width:calc(100% + 32px)!important;max-width:none!important}
   .references-page{padding-top:54px!important}
   .reference-item:nth-child(2):before,.reference-item:nth-child(4):before{display:none}
   header.open .nav a.active{color:var(--ink)!important;border-left:2px solid var(--red)!important;padding-left:14px!important}
