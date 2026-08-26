@@ -39,6 +39,34 @@ for path in public_paths:
     if updated != text:
         path.write_text(updated, encoding="utf-8")
 
+# Harden the two regional links that were unreliable on mobile. Their normal
+# href remains intact as a fallback, while taps are sent explicitly to the
+# production-domain root so the current page path cannot affect resolution.
+services = Path("leistungen.html")
+if services.exists():
+    text = services.read_text(encoding="utf-8")
+    if 'id="rn-regional-link-fix"' not in text:
+        regional_link_fix = r'''<script id="rn-regional-link-fix">
+(function(){
+  var targets={
+    "betonlogistik-paderborn-salzkotten.html":"/betonlogistik-paderborn-salzkotten.html",
+    "betonlogistik-guetersloh-lippstadt-soest.html":"/betonlogistik-guetersloh-lippstadt-soest.html"
+  };
+  document.addEventListener("click",function(event){
+    var link=event.target.closest&&event.target.closest(".regional-focus-links a");
+    if(!link)return;
+    var href=link.getAttribute("href");
+    if(!targets[href])return;
+    event.preventDefault();
+    window.location.assign(targets[href]);
+  });
+})();
+</script>'''
+        if "</body>" not in text:
+            raise SystemExit("RN regional link fix body closing tag not found")
+        text = text.replace("</body>", regional_link_fix + "\n</body>", 1)
+        services.write_text(text, encoding="utf-8")
+
 # The existing workflow still contains legacy grep checks for the former
 # GitHub-Pages URLs. Keep those strings only in ignored comments so CI stays
 # green while crawlers receive exclusively rn-transporte.de as active URLs.
