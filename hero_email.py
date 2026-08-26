@@ -17,14 +17,22 @@ if not hero_match:
 
 inner = hero_match.group(2)
 if f'mailto:{CONTACT_EMAIL}' not in inner:
-    inner += f'<a class="hero-email" href="mailto:{CONTACT_EMAIL}">{CONTACT_EMAIL}</a>'
+    mail_icon = (
+        f'<a class="hero-email" href="mailto:{CONTACT_EMAIL}" aria-label="E-Mail schreiben">'
+        '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        '<rect x="3" y="5" width="18" height="14" rx="1.5"></rect>'
+        '<path d="m4 7 8 6 8-6"></path>'
+        '</svg></a>'
+    )
+    inner += mail_icon
     html = html[:hero_match.start()] + hero_match.group(1) + inner + hero_match.group(3) + html[hero_match.end():]
 
 hero_email_style = r'''<style id="rn-hero-email-style">
 .hero-contact{flex-wrap:wrap;row-gap:12px}
-.hero-email{color:rgba(255,255,255,.88);font-size:12px;font-weight:560;letter-spacing:-.005em;white-space:nowrap;transition:opacity .18s ease}
-@media(hover:hover){.hero-email:hover{opacity:.68}}
-@media(max-width:900px){.hero-contact{gap:12px 18px}.hero-email{font-size:11px}}
+.hero-email{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;margin:-9px;color:#fff;opacity:.94;transition:opacity .18s ease}
+.hero-email svg{display:block}
+@media(hover:hover){.hero-email:hover{opacity:.62}}
+@media(max-width:900px){.hero-contact{gap:12px 18px}}
 </style>'''
 if 'id="rn-hero-email-style"' not in html:
     html = html.replace("</head>", hero_email_style + "\n</head>", 1)
