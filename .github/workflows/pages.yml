@@ -32,15 +32,21 @@ jobs:
       - name: Build RN premium site
         run: python build.py
 
+      - name: Pin RN favicon
+        run: |
+          sed -i 's#assets/favicon.svg?v=rn-brand-2#assets/favicon-rn.svg#g' index.html impressum.html datenschutz.html
+
       - name: Verify RN premium site
         run: |
           test -f rn_hero_final.png
           test -f assets/logo.webp
           test -f assets/premium.css
+          test -f assets/favicon-rn.svg
           test -f robots.txt
           test -f sitemap.xml
           grep -q 'src="rn_hero_final.png"' index.html
           grep -q 'src="assets/logo.webp"' index.html
+          grep -q 'href="assets/favicon-rn.svg"' index.html
           grep -q 'RN Transporte – zuverlässig. leistungsstark. deutschlandweit im Einsatz.' index.html
           grep -q 'Seit 2010 steht RN Transporte' index.html
           grep -q 'Holztransporte' index.html
