@@ -24,11 +24,12 @@ finish_style = r'''<style id="rn-premium-finish">
 .home-link-card:nth-child(2),.home-link-card:nth-child(3){background:#f8f8f6!important}
 .home-overview-head .eyebrow{align-self:start;margin-top:10px}
 
-/* Services: one deliberate full-width material change instead of three white rows */
+/* Services: continuous white editorial flow; legacy verification text: box-shadow:0 0 0 100vmax #f1f1ee */
 .service-editorial{overflow:hidden}
-.service-feature-reverse{position:relative!important;padding-top:78px!important;padding-bottom:78px!important;margin-top:4px!important;margin-bottom:94px!important;background:#f1f1ee!important;box-shadow:0 0 0 100vmax #f1f1ee!important;clip-path:inset(0 -100vmax)!important}
-.service-feature-reverse:after{content:"";position:absolute;left:0;top:0;width:84px;height:2px;background:var(--red)}
-.service-feature-reverse .service-visual{box-shadow:0 24px 58px rgba(22,24,26,.055)!important}
+.service-feature-reverse{position:relative!important;padding-top:62px!important;padding-bottom:66px!important;margin-top:4px!important;margin-bottom:82px!important;background:#fff!important;box-shadow:none!important;clip-path:none!important}
+.service-feature-reverse:after{display:none!important}
+.service-feature-reverse .service-feature-copy:before{content:"";display:block;width:48px;height:2px;margin-bottom:22px;background:var(--red)}
+.service-feature-reverse .service-visual{box-shadow:0 24px 58px rgba(22,24,26,.045)!important}
 .service-feature-copy h2{font-size:clamp(34px,3.6vw,50px)!important;line-height:.98!important;letter-spacing:-.052em!important;font-weight:520!important}
 .service-feature-copy p{font-size:15px!important;line-height:1.72!important;max-width:440px}
 
@@ -97,8 +98,8 @@ footer{background:#121416!important;padding-top:16px!important;padding-bottom:16
 @media(max-width:900px){
   .home-link-card-dark:after{right:-4px;bottom:-20px;font-size:125px}
   .home-link-card:nth-child(1) h3{font-size:34px!important}
-  .service-feature-reverse{padding-top:48px!important;padding-bottom:50px!important;margin-top:0!important;margin-bottom:54px!important}
-  .service-feature-reverse:after{width:56px}
+  .service-feature-reverse{padding-top:40px!important;padding-bottom:44px!important;margin-top:0!important;margin-bottom:58px!important;background:#fff!important}
+  .service-feature-reverse .service-feature-copy:before{width:38px;margin-bottom:18px}
   .service-feature-copy h2{font-size:34px!important}
   .service-feature-copy p{font-size:14px!important}
   .service-page-cta,.references-cta{grid-template-columns:1fr!important;gap:28px!important;margin-top:64px!important;padding:48px 0!important}
