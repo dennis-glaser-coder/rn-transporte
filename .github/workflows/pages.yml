@@ -50,6 +50,9 @@ jobs:
       - name: Build references page
         run: python references_page.py
 
+      - name: Apply sitewide premium pass
+        run: python premium_pass.py
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -65,6 +68,7 @@ jobs:
           test -f home_finetune.py
           test -f hero_email.py
           test -f references_page.py
+          test -f premium_pass.py
           test -f index.html
           test -f leistungen.html
           test -f referenzen.html
@@ -81,6 +85,8 @@ jobs:
           grep -q '.home-overview{padding:72px 0 92px!important}' index.html
           grep -q '.home-link-card{min-height:238px!important' index.html
           grep -q 'id="rn-hero-email-style"' index.html
+          grep -q 'id="rn-premium-pass"' index.html
+          grep -q 'id="rn-premium-motion"' index.html
           grep -q '<a href="tel:+491737275165">Anrufen</a>' index.html
           ! grep -q '<a href="tel:+491737275165">0173 72 75 165</a>' index.html
           grep -q 'class="hero-email" href="mailto:ntorwesten@web.de" aria-label="E-Mail schreiben"' index.html
@@ -95,6 +101,7 @@ jobs:
           grep -q 'aria-current="page">Leistungen</a>' leistungen.html
           grep -q 'id="rn-service-editorial-style"' leistungen.html
           grep -q 'id="rn-kies-image-style"' leistungen.html
+          grep -q 'id="rn-premium-pass"' leistungen.html
           grep -q 'assets/leistungen/betonpumpendienst.png' leistungen.html
           grep -q 'assets/leistungen/frischbetontransport.png' leistungen.html
           grep -q 'assets/leistungen/Kiestransporte.png' leistungen.html
@@ -107,6 +114,8 @@ jobs:
           grep -q 'aria-current="page">Referenzen</a>' referenzen.html
           ! grep -q 'aria-current="page">Leistungen</a>' referenzen.html
           grep -q 'id="rn-references-style"' referenzen.html
+          grep -q 'id="rn-premium-pass"' referenzen.html
+          grep -q 'grid-template-columns:repeat(12,minmax(0,1fr))' referenzen.html
           grep -q 'Im Einsatz für unsere Kunden.' referenzen.html
           grep -q 'assets/leistungen/betonpumpendienst.png' referenzen.html
           grep -q 'assets/leistungen/frischbetontransport.png' referenzen.html
@@ -116,6 +125,7 @@ jobs:
 
           grep -q 'aria-current="page">Unternehmen</a>' unternehmen.html
           grep -q 'id="rn-company-editorial-style"' unternehmen.html
+          grep -q 'id="rn-premium-pass"' unternehmen.html
           grep -q 'assets/leistungen/Baustelleneinsatz.png' unternehmen.html
           grep -q 'alt="RN Transporte im Baustelleneinsatz"' unternehmen.html
           grep -q 'loading="lazy" decoding="async" fetchpriority="low"' unternehmen.html
@@ -124,22 +134,26 @@ jobs:
           grep -q 'Seit 2010 steht RN Transporte' unternehmen.html
 
           grep -q 'aria-current="page">Karriere</a>' karriere.html
+          grep -q 'id="rn-premium-motion"' karriere.html
+          grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
+          grep -q '<span>C/CE</span>' karriere.html
+
           grep -q 'aria-current="page">Kontakt</a>' kontakt.html
           grep -q 'id="rn-mobile-menu-fix"' kontakt.html
           grep -q 'id="rn-contact-email-style"' kontakt.html
+          grep -q 'id="rn-premium-pass"' kontakt.html
           grep -q 'mailto:ntorwesten@web.de' kontakt.html
           grep -q '>ntorwesten@web.de</a>' kontakt.html
           grep -q 'E-Mail →' kontakt.html
           grep -q '0173 72 75 165' kontakt.html
           grep -q 'Lohweg 55a' kontakt.html
 
-          grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
-          grep -q '<span>C/CE</span>' karriere.html
-
           grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/referenzen.html</loc>' sitemap.xml
           grep -q 'noindex,follow' impressum.html
           grep -q 'noindex,follow' datenschutz.html
+          grep -q 'id="rn-legal-premium"' impressum.html
+          grep -q 'id="rn-legal-premium"' datenschutz.html
           grep -q 'DE 270004353' impressum.html
           grep -q 'HRB 9694' impressum.html
           grep -q 'Amtsgericht Paderborn' impressum.html
@@ -149,7 +163,7 @@ jobs:
           sed -i 's/RN Torwesten Transporte · Salzkotten-Niederntudorf/RN Torwesten Transporte · Salzkotten/g' impressum.html datenschutz.html
 
           rm -rf .github leistungen
-          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py
+          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py premium_pass.py
           rm -f assets/__upload_test.txt assets/favicon.svg assets/logo.svg assets/rn-hero.svg assets/rn-hero.webp
           rm -rf assets/hero assets/hero-final assets/hero-final12 assets/hero-hq assets/hero-recovered assets/rn-hero-build assets/rn-hero-clean
 
