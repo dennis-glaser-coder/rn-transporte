@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="#17181a"/><text x="32" y="43" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-size="34" font-weight="900" fill="#b71824">RN</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="RN Transporte">
+  <rect width="64" height="64" fill="#ffffff"/>
+  <path d="M6 51 L16 16 L52 10 L54 21" fill="none" stroke="#444446" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter"/>
+  <rect x="44" y="31" width="13" height="7" fill="#444446"/>
+  <text x="13" y="50" font-family="Arial Black,Arial,sans-serif" font-size="34" font-weight="900" fill="#c61724">R</text>
+  <text x="36" y="50" font-family="Arial Black,Arial,sans-serif" font-size="34" font-weight="900" fill="#c61724">N</text>
+</svg>
