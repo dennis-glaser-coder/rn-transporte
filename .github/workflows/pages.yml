@@ -32,6 +32,31 @@ jobs:
       - name: Build RN multipage site
         run: python build.py
 
+      - name: Refine homepage overview
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          page = Path("index.html")
+          html = page.read_text(encoding="utf-8")
+          html = html.replace("Direkt zum passenden Bereich.", "Alles Wichtige auf einen Blick.")
+          for number in ("01", "02", "03", "04"):
+              html = html.replace(f"<span>{number}</span>", "")
+          page.write_text(html, encoding="utf-8")
+
+          css_path = Path("assets/premium.css")
+          css = css_path.read_text(encoding="utf-8")
+          css = css.replace(
+              ".home-link-card h3{margin:48px 0 0;color:var(--ink);",
+              ".home-link-card h3{margin:0;color:var(--ink);",
+          )
+          css = css.replace(
+              ".home-link-card h3{margin-top:32px;font-size:27px}",
+              ".home-link-card h3{margin-top:0;font-size:27px}",
+          )
+          css_path.write_text(css, encoding="utf-8")
+          PY
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -56,6 +81,9 @@ jobs:
           grep -q 'class="mobile-project-link"' index.html
           grep -q 'class="header-cta" href="kontakt.html"' index.html
           grep -q 'href="assets/favicon-rn.svg"' index.html
+          grep -q 'Alles Wichtige auf einen Blick.' index.html
+          ! grep -q 'Direkt zum passenden Bereich.' index.html
+          ! grep -Eq '<span>0[1-4]</span>' index.html
           ! grep -q 'id="unternehmen"' index.html
           ! grep -q 'id="karriere"' index.html
 
