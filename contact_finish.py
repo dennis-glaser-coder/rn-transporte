@@ -16,9 +16,9 @@ mail_icon = '''<svg class="contact-action-icon" viewBox="0 0 24 24" aria-hidden=
 call_old = '<a href="tel:+491737275165">Anrufen</a>'
 call_new = f'<a class="contact-call-action" href="tel:+491737275165"><span class="contact-action-label">{phone_icon}<span>Anrufen</span></span><span class="contact-action-arrow" aria-hidden="true">→</span></a>'
 whatsapp_old = '<a class="contact-whatsapp" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener">WhatsApp →</a>'
-whatsapp_new = f'<a class="contact-whatsapp" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener"><span class="contact-action-label">{whatsapp_icon}<span>WhatsApp</span></span><span class="contact-action-arrow" aria-hidden="true">→</span></a>'
+whatsapp_new = f'<a class="contact-whatsapp" href="https://wa.me/491737275165?text=Hallo%20RN%20Torwesten%20Transporte%2C%20ich%20habe%20eine%20Anfrage." target="_blank" rel="noopener" aria-label="WhatsApp →"><span class="contact-action-label">{whatsapp_icon}<span>WhatsApp</span></span><span class="contact-action-arrow" aria-hidden="true">→</span></a>'
 mail_old = '<a class="contact-mail-action" href="mailto:ntorwesten@web.de">E-Mail →</a>'
-mail_new = f'<a class="contact-mail-action" href="mailto:ntorwesten@web.de"><span class="contact-action-label">{mail_icon}<span>E-Mail</span></span><span class="contact-action-arrow" aria-hidden="true">→</span></a>'
+mail_new = f'<a class="contact-mail-action" href="mailto:ntorwesten@web.de" aria-label="E-Mail →"><span class="contact-action-label">{mail_icon}<span>E-Mail</span></span><span class="contact-action-arrow" aria-hidden="true">→</span></a>'
 
 for old, new, label in (
     (call_old, call_new, "call action"),
