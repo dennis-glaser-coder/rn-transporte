@@ -144,6 +144,27 @@ jobs:
           grep -q 'HRB 9694' impressum.html
           grep -q 'Amtsgericht Paderborn' impressum.html
 
+      - name: Prepare clean public artifact
+        run: |
+          sed -i 's/RN Torwesten Transporte · Salzkotten-Niederntudorf/RN Torwesten Transporte · Salzkotten/g' impressum.html datenschutz.html
+
+          rm -rf .github leistungen
+          rm -f README.md build.py postbuild.py kies_image.py company_page.py home_finetune.py hero_email.py references_page.py
+          rm -f assets/__upload_test.txt assets/favicon.svg assets/logo.svg assets/rn-hero.svg assets/rn-hero.webp
+          rm -rf assets/hero assets/hero-final assets/hero-final12 assets/hero-hq assets/hero-recovered assets/rn-hero-build assets/rn-hero-clean
+
+          test -f index.html
+          test -f leistungen.html
+          test -f referenzen.html
+          test -f unternehmen.html
+          test -f karriere.html
+          test -f kontakt.html
+          test -f impressum.html
+          test -f datenschutz.html
+          test ! -e leistungen/index.html
+          ! grep -q 'Salzkotten-Niederntudorf' impressum.html
+          ! grep -q 'Salzkotten-Niederntudorf' datenschutz.html
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
