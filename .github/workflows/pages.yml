@@ -35,6 +35,9 @@ jobs:
       - name: Apply RN postbuild refinements
         run: python postbuild.py
 
+      - name: Add homepage email contact
+        run: python hero_email.py
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -43,6 +46,7 @@ jobs:
           test -f assets/favicon-rn.svg
           test -f assets/leistungen/betonpumpendienst.png
           test -f assets/leistungen/frischbetontransport.png
+          test -f hero_email.py
           test -f index.html
           test -f leistungen.html
           test -f unternehmen.html
@@ -54,6 +58,9 @@ jobs:
           grep -q 'src="rn_hero_final.png"' index.html
           grep -q '>MENÜ<' index.html
           grep -q 'id="rn-mobile-menu-fix"' index.html
+          grep -q 'id="rn-hero-email-style"' index.html
+          grep -q 'class="hero-email" href="mailto:ntorwesten@web.de"' index.html
+          grep -q '>ntorwesten@web.de</a>' index.html
           grep -q 'assets/premium.css?v=89' index.html
           grep -q 'Alles Wichtige auf einen Blick.' index.html
           ! grep -q 'Direkt zum passenden Bereich.' index.html
