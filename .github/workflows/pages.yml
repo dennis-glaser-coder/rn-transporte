@@ -62,6 +62,9 @@ jobs:
       - name: Finalize direct contact page
         run: python contact_finish.py
 
+      - name: Apply SEO finish
+        run: python .github/seo_finish.py
+
       - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
@@ -81,12 +84,16 @@ jobs:
           test -f wow_pass.py
           test -f premium_finish.py
           test -f contact_finish.py
+          test -f .github/seo_finish.py
           test -f index.html
           test -f leistungen.html
           test -f referenzen.html
           test -f unternehmen.html
           test -f karriere.html
           test -f kontakt.html
+          test -f betonpumpendienst.html
+          test -f frischbetontransporte.html
+          test -f kiestransporte.html
           test -f robots.txt
           test -f sitemap.xml
 
@@ -126,6 +133,11 @@ jobs:
           grep -q 'alt="RN Transporte Kiestransport im Einsatz"' leistungen.html
           grep -q 'filter:saturate(.84)' leistungen.html
           grep -q '<h2>Kiestransporte</h2>' leistungen.html
+          grep -q 'Betonpumpendienst, Frischbeton- & Kiestransporte | RN Transporte' leistungen.html
+          grep -q 'href="betonpumpendienst.html"' leistungen.html
+          grep -q 'href="frischbetontransporte.html"' leistungen.html
+          grep -q 'href="kiestransporte.html"' leistungen.html
+          grep -q 'id="rn-seo-service-links"' leistungen.html
           ! grep -q 'class="service-text-row"' leistungen.html
           ! grep -q 'Baustelleneinsatz.png' leistungen.html
 
@@ -161,6 +173,10 @@ jobs:
           grep -q 'id="rn-premium-finish"' karriere.html
           grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
           grep -q '<span>C/CE</span>' karriere.html
+          grep -q 'id="pumpenfahrer"' karriere.html
+          grep -q 'id="berufskraftfahrer"' karriere.html
+          grep -q '"@type":"JobPosting"' karriere.html
+          grep -q '"employmentType":"FULL_TIME"' karriere.html
 
           grep -q 'aria-current="page">Kontakt</a>' kontakt.html
           grep -q 'id="rn-mobile-menu-fix"' kontakt.html
@@ -177,8 +193,23 @@ jobs:
           ! grep -q 'Wir sprechen über Ihren Einsatz.' kontakt.html
           ! grep -q 'Kurze Wege und direkte Abstimmung:' kontakt.html
 
+          for page in betonpumpendienst.html frischbetontransporte.html kiestransporte.html; do
+            grep -q 'aria-current="page">Leistungen</a>' "$page"
+            grep -q 'id="rn-seo-service-page"' "$page"
+            grep -q '"@type":"Service"' "$page"
+            grep -q '"@type":"BreadcrumbList"' "$page"
+            grep -q 'Projekt anfragen →' "$page"
+            grep -q 'Einsatzgebiet</strong>Deutschlandweit' "$page"
+          done
+          grep -q 'Betonpumpendienst für Baustellen und Betonwerke.' betonpumpendienst.html
+          grep -q 'Frischbetontransporte zwischen Betonwerk und Baustelle.' frischbetontransporte.html
+          grep -q 'Kiestransporte und Schüttgüter für Baustellen.' kiestransporte.html
+
           grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
           grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/referenzen.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/betonpumpendienst.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/frischbetontransporte.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/kiestransporte.html</loc>' sitemap.xml
           grep -q 'noindex,follow' impressum.html
           grep -q 'noindex,follow' datenschutz.html
           grep -q 'id="rn-legal-premium"' impressum.html
@@ -202,6 +233,9 @@ jobs:
           test -f unternehmen.html
           test -f karriere.html
           test -f kontakt.html
+          test -f betonpumpendienst.html
+          test -f frischbetontransporte.html
+          test -f kiestransporte.html
           test -f impressum.html
           test -f datenschutz.html
           test ! -e leistungen/index.html
