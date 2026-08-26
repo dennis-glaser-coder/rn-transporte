@@ -62,6 +62,12 @@ path.write_text(html, encoding="utf-8")
 career_path = Path("karriere.html")
 career_html = career_path.read_text(encoding="utf-8")
 
+career_intro_old = 'Wir suchen motivierte Verstärkung für unseren Fuhrpark. Kurze Wege, ein familiäres Umfeld und ein Chef, der selbst täglich im Einsatz ist.'
+career_intro_new = 'Ganzjährig in Vollzeit, faire Vergütung und Fortbildungsmöglichkeiten – mit direkter Abstimmung im Team.'
+if career_intro_old not in career_html:
+    raise SystemExit("RN repeated career intro not found")
+career_html = career_html.replace(career_intro_old, career_intro_new, 1)
+
 career_mail_icon = '''<svg class="career-action-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m4.5 7 7.5 5.7L19.5 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'''
 career_whatsapp_icon = '''<svg class="career-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.7a8 8 0 0 1-11.8 7L4 20l1.3-4.1A8 8 0 1 1 20 11.7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.6 7.7c.2-.3.4-.3.7-.3h.5c.2 0 .4.1.5.4l.8 1.9c.1.3.1.5-.1.7l-.7.8c.8 1.6 1.9 2.7 3.5 3.5l.8-.9c.2-.2.4-.3.7-.1l1.8.8c.3.1.4.3.4.6 0 .8-.4 1.5-1.1 1.9-.6.3-1.4.5-2.3.2-1.8-.5-3.6-1.6-5-3-1.4-1.4-2.5-3.2-3-5-.2-.6 0-1.1.5-1.5Z" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>'''
 
@@ -112,6 +118,32 @@ if career_html.count('class="job-apply-panel"') != 2:
     raise SystemExit("RN career apply panels not inserted exactly twice")
 if 'Direkt per WhatsApp bewerben' in career_html:
     raise SystemExit("Old WhatsApp-only career application still present")
+if career_intro_old in career_html:
+    raise SystemExit("Repeated career intro still present")
 
 career_html = career_html.replace("</head>", career_style + "\n</head>", 1)
 career_path.write_text(career_html, encoding="utf-8")
+
+
+# ---------- Final mobile QA ----------
+mobile_style = r'''<style id="rn-mobile-final-qa">
+@media(max-width:900px){
+  .hero-cta{min-height:44px!important}
+  .hero-contact>a:first-child{display:inline-flex!important;align-items:center!important;min-height:44px!important}
+  .hero-contact .wa-icon,.hero-contact .hero-email{width:44px!important;height:44px!important;margin:-4px!important}
+  .company-page-cta a{min-height:44px!important}
+}
+@media(max-width:340px){
+  .service-editorial .service-feature{overflow:hidden!important}
+  .service-editorial .service-feature .service-visual{margin-left:0!important;margin-right:0!important;width:100%!important;max-width:100%!important}
+  .service-editorial .service-feature .service-feature-copy{width:100%!important;max-width:100%!important;min-width:0!important}
+}
+</style>'''
+
+for filename in ("index.html", "leistungen.html", "referenzen.html", "unternehmen.html", "karriere.html", "kontakt.html"):
+    page_path = Path(filename)
+    page_html = page_path.read_text(encoding="utf-8")
+    if 'id="rn-mobile-final-qa"' in page_html:
+        raise SystemExit(f"RN mobile QA style already present in {filename}")
+    page_html = page_html.replace("</head>", mobile_style + "\n</head>", 1)
+    page_path.write_text(page_html, encoding="utf-8")
