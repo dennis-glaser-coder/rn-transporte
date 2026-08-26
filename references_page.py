@@ -56,7 +56,7 @@ template = re.sub(r'<meta property="og:url" content="[^"]+">', f'<meta property=
 references_main = '''
 <section class="page-hero"><div class="wrap page-hero-grid">
   <div class="eyebrow">Referenzen</div>
-  <div><h1>Einsätze, die zeigen, wie wir arbeiten.</h1><p>Einblicke in den täglichen Einsatz von RN Transporte – von Betonpumpendienst und Frischbetonlogistik bis zu Kies- und Schüttguttransporten.</p></div>
+  <div><h1>Im Einsatz für unsere Kunden.</h1><p>Einblicke in den täglichen Einsatz von RN Transporte – von Betonpumpendienst und Frischbetonlogistik bis zu Kies- und Schüttguttransporten.</p></div>
 </div></section>
 
 <section class="references-page" aria-label="Ausgewählte Einsätze von RN Transporte">
