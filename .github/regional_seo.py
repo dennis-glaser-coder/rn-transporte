@@ -20,7 +20,9 @@ except ModuleNotFoundError:
         "Pillow",
     ])
 
-runpy.run_path(".github/social_preview.py", run_name="__main__")
+# Run this in a fresh Python process so a just-installed Pillow package is
+# picked up reliably on GitHub Actions runners.
+subprocess.check_call([sys.executable, ".github/social_preview.py"])
 
 # GitHub Pages now serves the project on the real company domain. The build
 # scripts intentionally remain untouched; this final pass normalizes every
