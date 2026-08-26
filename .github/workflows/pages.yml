@@ -59,6 +59,8 @@ jobs:
           grep -q '>MENÜ<' index.html
           grep -q 'id="rn-mobile-menu-fix"' index.html
           grep -q 'id="rn-hero-email-style"' index.html
+          grep -q '<a href="tel:+491737275165">Anrufen</a>' index.html
+          ! grep -q '<a href="tel:+491737275165">0173 72 75 165</a>' index.html
           grep -q 'class="hero-email" href="mailto:ntorwesten@web.de" aria-label="E-Mail schreiben"' index.html
           grep -q '<rect x="3" y="5" width="18" height="14"' index.html
           ! grep -q '>ntorwesten@web.de</a>' index.html
