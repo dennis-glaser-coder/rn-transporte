@@ -29,43 +29,71 @@ jobs:
         with:
           enablement: true
 
-      - name: Build RN premium site
+      - name: Build RN multipage site
         run: python build.py
 
-      - name: Pin RN favicon
-        run: |
-          sed -i 's#assets/favicon.svg?v=rn-brand-2#assets/favicon-rn.svg#g' index.html impressum.html datenschutz.html
-
-      - name: Verify RN premium site
+      - name: Verify RN multipage site
         run: |
           test -f rn_hero_final.png
           test -f assets/logo.webp
           test -f assets/premium.css
           test -f assets/favicon-rn.svg
+          test -f index.html
+          test -f leistungen.html
+          test -f unternehmen.html
+          test -f karriere.html
+          test -f kontakt.html
           test -f robots.txt
           test -f sitemap.xml
+
           grep -q 'src="rn_hero_final.png"' index.html
-          grep -q 'src="assets/logo.webp"' index.html
+          grep -q '>MENÜ<' index.html
+          grep -q 'href="index.html" class="active" aria-current="page">Startseite</a>' index.html
+          grep -q 'href="leistungen.html"' index.html
+          grep -q 'href="unternehmen.html"' index.html
+          grep -q 'href="karriere.html"' index.html
+          grep -q 'href="kontakt.html"' index.html
+          grep -q 'class="mobile-project-link"' index.html
+          grep -q 'class="header-cta" href="kontakt.html"' index.html
           grep -q 'href="assets/favicon-rn.svg"' index.html
-          grep -q 'RN Transporte – zuverlässig. leistungsstark. deutschlandweit im Einsatz.' index.html
-          grep -q 'Seit 2010 steht RN Transporte' index.html
-          grep -q 'Holztransporte' index.html
-          grep -q 'Karriere bei RN Transporte' index.html
-          grep -q '<span>C/CE</span>' index.html
-          grep -q 'Projekt oder Einsatz anfragen.' index.html
-          grep -q 'Salzkotten · bundesweit im Einsatz' index.html
-          grep -q '<a class="header-cta" href="#kontakt">Projekt anfragen</a>' index.html
-          ! grep -q 'class="phone"' index.html
-          ! grep -q 'Stelle 01' index.html
-          ! grep -q 'Stelle 02' index.html
+          ! grep -q 'id="unternehmen"' index.html
+          ! grep -q 'id="karriere"' index.html
+
+          grep -q 'aria-current="page">Leistungen</a>' leistungen.html
+          grep -q 'Betonpumpendienst' leistungen.html
+          grep -q 'Frischbetontransporte' leistungen.html
+          grep -q 'Kiestransporte' leistungen.html
+
+          grep -q 'aria-current="page">Unternehmen</a>' unternehmen.html
+          grep -q 'Seit 2010 steht RN Transporte' unternehmen.html
+          grep -q 'Holztransporte' unternehmen.html
+
+          grep -q 'aria-current="page">Karriere</a>' karriere.html
+          grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
+          grep -q '<span>C/CE</span>' karriere.html
+          grep -q 'Berufskraftfahrer' karriere.html
+
+          grep -q 'aria-current="page">Kontakt</a>' kontakt.html
+          grep -q '0173 72 75 165' kontakt.html
+          grep -q 'Lohweg 55a' kontakt.html
+          grep -q 'WhatsApp' kontakt.html
+
           grep -q '<link rel="canonical" href="https://dennis-glaser-coder.github.io/rn-transporte/">' index.html
-          grep -q 'application/ld+json' index.html
-          grep -q 'RN Torwesten Transporte UG (haftungsbeschränkt)' index.html
-          grep -q 'og:image' index.html
+          grep -q '<link rel="canonical" href="https://dennis-glaser-coder.github.io/rn-transporte/leistungen.html">' leistungen.html
+          grep -q '<link rel="canonical" href="https://dennis-glaser-coder.github.io/rn-transporte/unternehmen.html">' unternehmen.html
+          grep -q '<link rel="canonical" href="https://dennis-glaser-coder.github.io/rn-transporte/karriere.html">' karriere.html
+          grep -q '<link rel="canonical" href="https://dennis-glaser-coder.github.io/rn-transporte/kontakt.html">' kontakt.html
+
           grep -q 'Sitemap: https://dennis-glaser-coder.github.io/rn-transporte/sitemap.xml' robots.txt
-          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/leistungen.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/unternehmen.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/karriere.html</loc>' sitemap.xml
+          grep -q '<loc>https://dennis-glaser-coder.github.io/rn-transporte/kontakt.html</loc>' sitemap.xml
+
           grep -q 'noindex,follow' impressum.html
           grep -q 'noindex,follow' datenschutz.html
+          grep -q 'href="assets/favicon-rn.svg"' impressum.html
+          grep -q 'href="assets/favicon-rn.svg"' datenschutz.html
           grep -q 'DE 270004353' impressum.html
           grep -q 'HRB 9694' impressum.html
           grep -q 'Amtsgericht Paderborn' impressum.html
