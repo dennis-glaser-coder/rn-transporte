@@ -107,7 +107,7 @@ jobs:
           grep -q 'aria-current="page">Referenzen</a>' referenzen.html
           ! grep -q 'aria-current="page">Leistungen</a>' referenzen.html
           grep -q 'id="rn-references-style"' referenzen.html
-          grep -q 'Einsätze, die zeigen, wie wir arbeiten.' referenzen.html
+          grep -q 'Im Einsatz für unsere Kunden.' referenzen.html
           grep -q 'assets/leistungen/betonpumpendienst.png' referenzen.html
           grep -q 'assets/leistungen/frischbetontransport.png' referenzen.html
           grep -q 'assets/leistungen/Kiestransporte.png' referenzen.html
