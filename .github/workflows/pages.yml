@@ -38,6 +38,9 @@ jobs:
       - name: Add Kiestransporte image
         run: python kies_image.py
 
+      - name: Refine company page
+        run: python company_page.py
+
       - name: Add homepage email contact
         run: python hero_email.py
 
@@ -50,7 +53,9 @@ jobs:
           test -f assets/leistungen/betonpumpendienst.png
           test -f assets/leistungen/frischbetontransport.png
           test -f assets/leistungen/Kiestransporte.png
+          test -f assets/leistungen/Baustelleneinsatz.png
           test -f kies_image.py
+          test -f company_page.py
           test -f hero_email.py
           test -f index.html
           test -f leistungen.html
@@ -87,6 +92,14 @@ jobs:
           ! grep -q 'Baustelleneinsatz.png' leistungen.html
 
           grep -q 'aria-current="page">Unternehmen</a>' unternehmen.html
+          grep -q 'id="rn-company-editorial-style"' unternehmen.html
+          grep -q 'assets/leistungen/Baustelleneinsatz.png' unternehmen.html
+          grep -q 'alt="RN Transporte im Baustelleneinsatz"' unternehmen.html
+          grep -q 'loading="lazy" decoding="async" fetchpriority="low"' unternehmen.html
+          grep -q 'Sie möchten mit RN Transporte zusammenarbeiten?' unternehmen.html
+          grep -q 'Kontakt aufnehmen →' unternehmen.html
+          grep -q 'Seit 2010 steht RN Transporte' unternehmen.html
+
           grep -q 'aria-current="page">Karriere</a>' karriere.html
           grep -q 'aria-current="page">Kontakt</a>' kontakt.html
           grep -q 'id="rn-mobile-menu-fix"' kontakt.html
@@ -97,7 +110,6 @@ jobs:
           grep -q '0173 72 75 165' kontakt.html
           grep -q 'Lohweg 55a' kontakt.html
 
-          grep -q 'Seit 2010 steht RN Transporte' unternehmen.html
           grep -q 'Pumpenfahrer / Betonpumpenmaschinist' karriere.html
           grep -q '<span>C/CE</span>' karriere.html
 
