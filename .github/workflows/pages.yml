@@ -66,6 +66,9 @@ jobs:
       - name: Apply SEO finish
         run: python .github/seo_finish.py
 
+      - name: Sharpen service copy
+        run: python .github/service_copy_finish.py
+
       - name: Finalize regions and public URLs
         run: python .github/regional_seo.py
 
@@ -134,6 +137,9 @@ jobs:
               'id="rn-service-editorial-style"',
               'id="rn-kies-image-style"',
               'id="rn-regional-focus"',
+              'Pumpeneinsätze sauber vorbereitet und auf den Baustellenablauf abgestimmt.',
+              'Fahrmischertransporte mit klarer Abstimmung zwischen Betonwerk und Baustelle.',
+              'Kies und Schüttgüter mit Sattelkippern',
               'Paderborn / Salzkotten',
               'Bielefeld / Gütersloh',
               'Lippstadt / Soest / Geseke',
@@ -148,6 +154,28 @@ jobs:
           for stale in ('Bielefeld / OWL', 'Gütersloh / Lippstadt / Soest'):
               if stale in services:
                   raise SystemExit(f"Stale regional label remains: {stale}")
+
+          service_expectations = {
+              "betonpumpendienst.html": (
+                  "Betonpumpendienst für planbare Baustelleneinsätze.",
+                  "Zuverlässig geplant. Präzise im Einsatz.",
+              ),
+              "frischbetontransporte.html": (
+                  "Frischbetontransporte mit verlässlichem Timing.",
+                  "Verlässlich zwischen Werk und Baustelle.",
+              ),
+              "kiestransporte.html": (
+                  "Kies- und Schüttguttransporte passend zum Baustellenablauf.",
+                  "Flexibel disponiert. Zuverlässig geliefert.",
+              ),
+          }
+          for filename, markers in service_expectations.items():
+              text = Path(filename).read_text(encoding="utf-8")
+              for token in (*markers, "Einsatz anfragen →"):
+                  if token not in text:
+                      raise SystemExit(f"Service copy verification failed in {filename}: {token}")
+              if 'RN Transporte · Salzkotten</span><h2>' in text:
+                  raise SystemExit(f"Old brand-first service kicker remains in {filename}")
 
           region_expectations = {
               "betonlogistik-paderborn-salzkotten.html": "Betonlogistik für Paderborn und den Kreis.",
