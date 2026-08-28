@@ -81,11 +81,35 @@ for path in Path(".").glob("*.html"):
     path.write_text(text, encoding="utf-8")
 
 # Regional links use root-relative URLs so Safari cannot resolve them against
-# an accidental nested path. No JavaScript interception is necessary.
+# an accidental nested path.
 for path in Path(".").glob("*.html"):
     text = path.read_text(encoding="utf-8")
     text = re.sub(r'href="(betonlogistik-[a-z0-9-]+\.html)"', r'href="/\1"', text, flags=re.I)
     path.write_text(text, encoding="utf-8")
+
+# The first regional row was still unreliable on iOS although the generated
+# target exists. Make that one destination fully explicit and keep the whole
+# regional link layer above neighbouring decorative/CTA layers.
+paderborn_target = Path("betonlogistik-paderborn-salzkotten.html")
+if not paderborn_target.is_file():
+    raise SystemExit("RN Paderborn/Salzkotten target page missing")
+services_path = Path("leistungen.html")
+services = services_path.read_text(encoding="utf-8")
+paderborn_relative = 'href="/betonlogistik-paderborn-salzkotten.html"'
+paderborn_absolute = 'href="https://rn-transporte.de/betonlogistik-paderborn-salzkotten.html"'
+if paderborn_relative not in services:
+    raise SystemExit("RN Paderborn/Salzkotten hub link missing")
+services = services.replace(paderborn_relative, paderborn_absolute, 1)
+regional_link_hardening = r'''<style id="rn-regional-link-hardening">
+.regional-focus{position:relative;z-index:10;isolation:isolate}
+.regional-focus-links{position:relative;z-index:20}
+.regional-focus-links a{position:relative;z-index:21;pointer-events:auto!important;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0)}
+</style>'''
+if 'id="rn-regional-link-hardening"' not in services:
+    if "</head>" not in services:
+        raise SystemExit("RN regional link hardening head closing tag missing")
+    services = services.replace("</head>", regional_link_hardening + "\n</head>", 1)
+services_path.write_text(services, encoding="utf-8")
 
 # Holztransporte came from an older company description and are not treated as
 # a confirmed current service. Remove those legacy references from the public
@@ -161,6 +185,8 @@ for label in (
 for stale in ("Bielefeld / OWL", "Gütersloh / Lippstadt / Soest"):
     if stale in services:
         raise SystemExit(f"RN final stale region label remains: {stale}")
+if paderborn_absolute not in services or 'id="rn-regional-link-hardening"' not in services:
+    raise SystemExit("RN Paderborn/Salzkotten link hardening missing")
 
 
 def local_target(value: str):
