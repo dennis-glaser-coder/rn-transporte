@@ -263,8 +263,7 @@ regional_page_style = r'''<style id="rn-regional-page">
 </style>'''
 
 template = Path("betonpumpendienst.html").read_text(encoding="utf-8")
-main_match = re.search(r'<main>.*?</main>', template, re.S)
-if not main_match:
+if not re.search(r'<main>.*?</main>', template, re.S):
     raise SystemExit("RN regional SEO template main not found")
 
 for region in REGIONS:
@@ -301,6 +300,9 @@ for region in REGIONS:
 <section class="regional-services"><div class="wrap regional-services-inner"><span class="regional-services-label">Leistungen in dieser Region</span><div class="regional-service-links"><a href="betonpumpendienst.html">Betonpumpendienst</a><a href="frischbetontransporte.html">Frischbetontransporte</a><a href="kiestransporte.html">Kiestransporte</a></div></div></section>
 <section class="regional-other"><div class="wrap regional-other-inner"><span class="regional-services-label">Weitere Regionen im Kerngebiet</span><div class="regional-other-links">{other_links}</div></div></section>
 </main>'''
+    main_match = re.search(r'<main>.*?</main>', page, re.S)
+    if not main_match:
+        raise SystemExit(f"RN regional SEO current main not found: {region['filename']}")
     page = page[:main_match.start()] + main + page[main_match.end():]
 
     schema_match = None
@@ -372,3 +374,5 @@ for region in REGIONS:
         raise SystemExit(f"RN regional SEO page malformed: {region['filename']}")
     if 'Rund 150 km um Salzkotten' not in text:
         raise SystemExit(f"RN regional SEO radius missing: {region['filename']}")
+    if text.count("<main>") != 1 or text.count("</main>") != 1 or "</header>" not in text or "<footer>" not in text:
+        raise SystemExit(f"RN regional SEO document structure malformed: {region['filename']}")
