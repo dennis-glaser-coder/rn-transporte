@@ -206,7 +206,7 @@ for marker in (
     pump_text,
     driver_text,
     "<strong>Unbefristet</strong> in Vollzeit",
-    "Direkt per WhatsApp bewerben",
+    '<a class="job-apply"',
     '"@type":"JobPosting"',
 ):
     if marker not in career:
