@@ -110,4 +110,110 @@ for filename, copy in service_copy.items():
 
     path.write_text(html, encoding="utf-8")
 
-print("RN service copy finish passed")
+
+# Sharpen the career page in the same tone: concrete work, clear expectations
+# and confirmed employer facts instead of generic recruiting phrases.
+career_path = Path("karriere.html")
+career = career_path.read_text(encoding="utf-8")
+
+career_hero = "Arbeiten im Fahrbetrieb und auf der Baustelle."
+career_intro = (
+    "Betonpumpe, Fahrmischer, Kipper oder Sattelzug: Wir suchen Menschen, die zuverlässig arbeiten, "
+    "Verantwortung übernehmen und wissen, worauf es im täglichen Einsatz ankommt."
+)
+career = replace_once(
+    career,
+    r'(<div class="eyebrow">Karriere</div><div><h1>).*?(</h1><p>).*?(</p></div></div></section>)',
+    rf'\1{career_hero}\2{career_intro}\3',
+    "career hero",
+    flags=re.S,
+)
+
+career_head = (
+    '<div class="career-copy"><strong>Was im Alltag zählt.</strong>'
+    'Klare Absprachen, ein sicherer Umgang mit Fahrzeug und Technik und Kollegen, die sich aufeinander verlassen können. '
+    'Wer sauber arbeitet und Verantwortung übernimmt, passt zu uns.</div><div class="career-note">'
+)
+career = replace_once(
+    career,
+    r'<div class="career-copy"><strong>.*?</strong>.*?</div><div class="career-note">',
+    career_head,
+    "career introduction",
+    flags=re.S,
+)
+
+pump_text = (
+    "Du bedienst unsere Betonpumpen auf Baustellen, bereitest den Einsatz sicher vor und stimmst dich vor Ort mit "
+    "Baustelle und Betonversorgung ab. Technisches Verständnis und ein verantwortungsvoller Umgang mit Maschine und "
+    "Fahrzeug gehören dabei dazu."
+)
+career = replace_once(
+    career,
+    r'(<article class="job-card" id="pumpenfahrer"><h3>Pumpenfahrer / Betonpumpenmaschinist \(m/w/d\)</h3><p>).*?(</p>)',
+    rf'\1{pump_text}\2',
+    "pump driver copy",
+    flags=re.S,
+)
+
+driver_text = (
+    "Du bist mit Fahrmischer, Kipper oder Sattelzug unterwegs und übernimmst Beton- und Baustofftransporte. Dabei zählen "
+    "ein sicherer Umgang mit dem Fahrzeug, zuverlässige Abläufe und die direkte Abstimmung beim Einsatz."
+)
+career = replace_once(
+    career,
+    r'(<article class="job-card" id="berufskraftfahrer"><h3>Berufskraftfahrer \(m/w/d\) – Fahrmischer / Kipper / Sattelzug</h3><p>).*?(</p>)',
+    rf'\1{driver_text}\2',
+    "professional driver copy",
+    flags=re.S,
+)
+career = career.replace(
+    "<li>Motivierte und verantwortungsbewusste Arbeitsweise</li>",
+    "<li>Verantwortungsbewusste und zuverlässige Arbeitsweise</li>",
+    1,
+)
+
+benefits = (
+    '<div class="career-benefits">'
+    '<span><strong>Unbefristet</strong> in Vollzeit</span>'
+    '<span><strong>Ganzjährig</strong> beschäftigt</span>'
+    '<span><strong>Kurze Wege</strong> im Unternehmen</span>'
+    '<span><strong>Fortbildung</strong> möglich</span>'
+    '</div>'
+)
+career = replace_once(
+    career,
+    r'<div class="career-benefits">.*?</div>',
+    benefits,
+    "career benefits",
+    flags=re.S,
+)
+
+# Keep the JobPosting descriptions aligned with the visible page copy.
+career = career.replace(
+    "Betonpumpen auf Baustellen bedienen, sicheren Aufbau gewährleisten und den Einsatz vor Ort koordinieren. Technisches Verständnis und zuverlässige Arbeitsweise sind erforderlich; Erfahrung mit Betonpumpen ist ideal. Ganzjährige Beschäftigung und Fortbildungsmöglichkeiten.",
+    "Betonpumpen auf Baustellen bedienen, den Einsatz sicher vorbereiten und sich vor Ort mit Baustelle und Betonversorgung abstimmen. Technisches Verständnis und ein verantwortungsvoller Umgang mit Maschine und Fahrzeug sind wichtig. Ganzjährige Beschäftigung und Fortbildungsmöglichkeiten.",
+    1,
+)
+career = career.replace(
+    "Beton- und Baustofftransporte mit Fahrmischer, Kipper oder Sattelzug. Erforderlich sind Führerschein CE mit gültiger Schlüsselzahl 95 sowie eine motivierte und verantwortungsbewusste Arbeitsweise. Ganzjährige Beschäftigung und Fortbildungsmöglichkeiten.",
+    "Beton- und Baustofftransporte mit Fahrmischer, Kipper oder Sattelzug. Erforderlich sind Führerschein CE mit gültiger Schlüsselzahl 95 sowie eine verantwortungsbewusste und zuverlässige Arbeitsweise. Ganzjährige Beschäftigung und Fortbildungsmöglichkeiten.",
+    1,
+)
+
+for marker in (
+    career_hero,
+    "Was im Alltag zählt.",
+    pump_text,
+    driver_text,
+    "<strong>Unbefristet</strong> in Vollzeit",
+    "Direkt per WhatsApp bewerben",
+    '"@type":"JobPosting"',
+):
+    if marker not in career:
+        raise SystemExit(f"RN career copy verification failed: {marker}")
+if "Faire Vergütung" in career or "über dem Durchschnitt" in career:
+    raise SystemExit("RN unconfirmed career salary claim remains")
+
+career_path.write_text(career, encoding="utf-8")
+
+print("RN service and career copy finish passed")
