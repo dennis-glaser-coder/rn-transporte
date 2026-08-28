@@ -85,7 +85,9 @@ for source_path, output_path in reference_sources:
         image.save(output_path, "WEBP", quality=82, method=6)
 
 gallery_markup = "\n".join(
-    f'<div class="reference-photo"><img src="{output_path}" alt="RN Transporte Baustelleneinsatz" loading="lazy" decoding="async" fetchpriority="low"></div>'
+    f'''<button class="reference-photo" type="button" data-lightbox-src="{output_path}" aria-label="Baustelleneinsatz vergrößern">
+      <img src="{output_path}" alt="RN Transporte Baustelleneinsatz" loading="lazy" decoding="async" fetchpriority="low">
+    </button>'''
     for _, output_path in reference_sources
 )
 
@@ -102,6 +104,13 @@ references_main = f'''
     </div>
   </div>
 </section>
+
+<div class="reference-lightbox" id="reference-lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Vergrößerte Referenzansicht">
+  <button class="reference-lightbox-close" type="button" aria-label="Ansicht schließen">×</button>
+  <button class="reference-lightbox-nav reference-lightbox-prev" type="button" aria-label="Vorheriges Bild">‹</button>
+  <div class="reference-lightbox-stage"><img src="" alt="RN Transporte Baustelleneinsatz vergrößert"></div>
+  <button class="reference-lightbox-nav reference-lightbox-next" type="button" aria-label="Nächstes Bild">›</button>
+</div>
 '''.strip()
 
 template, count = re.subn(r'<main>.*?</main>', f'<main>\n{references_main}\n</main>', template, count=1, flags=re.S)
@@ -112,18 +121,86 @@ references_style = r'''<style id="rn-references-style">
 .reference-hero{padding-bottom:42px}
 .references-page{padding:0 0 104px;background:#fff}
 .reference-photo-grid{columns:2 430px;column-gap:24px}
-.reference-photo{margin:0 0 24px;break-inside:avoid;overflow:hidden;background:#f1f2f2}
-.reference-photo img{display:block;width:100%;height:auto;transition:transform .45s ease}
-@media(hover:hover){.reference-photo:hover img{transform:scale(1.01)}}
+.reference-photo{display:block;width:100%;padding:0;border:0;margin:0 0 24px;break-inside:avoid;overflow:hidden;background:#f1f2f2;cursor:zoom-in;text-align:left}
+.reference-photo img{display:block;width:100%;height:auto;transition:transform .45s ease,filter .45s ease}
+.reference-lightbox{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(12,14,16,.94);opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
+.reference-lightbox.is-open{opacity:1;visibility:visible}
+.reference-lightbox-stage{display:flex;align-items:center;justify-content:center;width:min(88vw,1500px);height:88vh;padding:24px}
+.reference-lightbox-stage img{display:block;max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.reference-lightbox-close,.reference-lightbox-nav{position:absolute;border:0;background:transparent;color:#fff;font-family:Arial,sans-serif;font-weight:300;cursor:pointer;opacity:.76;transition:opacity .2s ease,transform .2s ease}
+.reference-lightbox-close{top:20px;right:24px;font-size:38px;line-height:1;padding:8px 12px}
+.reference-lightbox-nav{top:50%;transform:translateY(-50%);font-size:56px;line-height:1;padding:22px 18px}
+.reference-lightbox-prev{left:16px}.reference-lightbox-next{right:16px}
+.reference-lightbox-close:hover,.reference-lightbox-nav:hover{opacity:1}
+.reference-lightbox-nav:hover{transform:translateY(-50%) scale(1.04)}
+body.reference-lightbox-open{overflow:hidden}
+@media(hover:hover){.reference-photo:hover img{transform:scale(1.012);filter:brightness(.96)}}
 @media(max-width:900px){
   .reference-hero{padding-bottom:28px}
   .references-page{padding:0 0 74px}
   .reference-photo-grid{columns:1;margin:0 -16px}
   .reference-photo{margin-bottom:12px}
+  .reference-lightbox-stage{width:100vw;height:86vh;padding:54px 12px 28px}
+  .reference-lightbox-close{top:10px;right:10px;font-size:34px}
+  .reference-lightbox-nav{font-size:44px;padding:18px 10px}
+  .reference-lightbox-prev{left:0}.reference-lightbox-next{right:0}
 }
+@media(prefers-reduced-motion:reduce){.reference-photo img,.reference-lightbox,.reference-lightbox-close,.reference-lightbox-nav{transition:none}}
 </style>'''
 
 template = template.replace("</head>", references_style + "\n</head>", 1)
+
+lightbox_script = r'''<script id="rn-reference-lightbox">
+(() => {
+  const items = Array.from(document.querySelectorAll('.reference-photo[data-lightbox-src]'));
+  const lightbox = document.getElementById('reference-lightbox');
+  if (!items.length || !lightbox) return;
+
+  const image = lightbox.querySelector('.reference-lightbox-stage img');
+  const closeButton = lightbox.querySelector('.reference-lightbox-close');
+  const prevButton = lightbox.querySelector('.reference-lightbox-prev');
+  const nextButton = lightbox.querySelector('.reference-lightbox-next');
+  let activeIndex = 0;
+  let lastTrigger = null;
+
+  const show = (index) => {
+    activeIndex = (index + items.length) % items.length;
+    image.src = items[activeIndex].dataset.lightboxSrc;
+  };
+
+  const open = (index, trigger) => {
+    lastTrigger = trigger;
+    show(index);
+    lightbox.classList.add('is-open');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('reference-lightbox-open');
+    closeButton.focus();
+  };
+
+  const close = () => {
+    lightbox.classList.remove('is-open');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('reference-lightbox-open');
+    image.removeAttribute('src');
+    if (lastTrigger) lastTrigger.focus();
+  };
+
+  items.forEach((item, index) => item.addEventListener('click', () => open(index, item)));
+  closeButton.addEventListener('click', close);
+  prevButton.addEventListener('click', () => show(activeIndex - 1));
+  nextButton.addEventListener('click', () => show(activeIndex + 1));
+  lightbox.addEventListener('click', (event) => { if (event.target === lightbox) close(); });
+
+  document.addEventListener('keydown', (event) => {
+    if (!lightbox.classList.contains('is-open')) return;
+    if (event.key === 'Escape') close();
+    if (event.key === 'ArrowLeft') show(activeIndex - 1);
+    if (event.key === 'ArrowRight') show(activeIndex + 1);
+  });
+})();
+</script>'''
+
+template = template.replace("</body>", lightbox_script + "\n</body>", 1)
 Path("referenzen.html").write_text(template, encoding="utf-8")
 
 # Add the new page to the sitemap without disturbing the generated entries.
