@@ -65,7 +65,6 @@ template = re.sub(r'<meta property="og:url" content="[^"]+">', f'<meta property=
 
 # Keep the uploaded PNGs untouched and generate lightweight WebP copies for the public gallery.
 reference_sources = [
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_47.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_47.webp"),
     ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.webp"),
     ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.webp"),
     ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.webp"),
