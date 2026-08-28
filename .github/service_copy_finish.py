@@ -206,7 +206,6 @@ for marker in (
     pump_text,
     driver_text,
     "<strong>Unbefristet</strong> in Vollzeit",
-    '<a class="job-apply"',
     '"@type":"JobPosting"',
 ):
     if marker not in career:
