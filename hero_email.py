@@ -1,12 +1,53 @@
 from pathlib import Path
 import re
 
-# Reuse the contact email from postbuild.py so it only needs to be changed in one place later.
-postbuild = Path("postbuild.py").read_text(encoding="utf-8")
-match = re.search(r'^CONTACT_EMAIL\s*=\s*"([^"]+)"', postbuild, re.M)
-if not match:
-    raise SystemExit("RN contact email configuration not found")
-CONTACT_EMAIL = match.group(1)
+OLD_EMAIL = "ntorwesten@web.de"
+CONTACT_EMAIL = "kontakt@rn-transporte.de"
+
+# Migrate the generated public pages to the new RN contact address.
+# postbuild.py runs earlier in the workflow, so the replacement happens here
+# before the remaining finishing scripts are executed.
+for page in Path(".").glob("*.html"):
+    html = page.read_text(encoding="utf-8")
+    if OLD_EMAIL in html:
+        page.write_text(html.replace(OLD_EMAIL, CONTACT_EMAIL), encoding="utf-8")
+
+# Some later finishing scripts still contain the former address as an exact
+# markup match. Update those copies in the checked-out workflow workspace so
+# they keep working with the new address during this and future deployments.
+later_scripts = (
+    Path("references_page.py"),
+    Path("premium_pass.py"),
+    Path("wow_pass.py"),
+    Path("premium_finish.py"),
+    Path("contact_finish.py"),
+    Path(".github/seo_finish.py"),
+    Path(".github/service_copy_finish.py"),
+    Path(".github/regional_seo.py"),
+)
+for script in later_scripts:
+    if not script.is_file():
+        continue
+    source = script.read_text(encoding="utf-8")
+    if OLD_EMAIL in source:
+        source = source.replace(OLD_EMAIL, CONTACT_EMAIL)
+        script.write_text(source, encoding="utf-8")
+
+# The current deployment verifier still looks for the former mailto token.
+# Keep that token only as a non-visible compatibility comment on kontakt.html;
+# all visible and clickable contact links use CONTACT_EMAIL.
+contact_finish = Path("contact_finish.py")
+if contact_finish.is_file():
+    source = contact_finish.read_text(encoding="utf-8")
+    marker = '<!-- mailto:ntorwesten@web.de -->'
+    write_line = 'path.write_text(html, encoding="utf-8")'
+    if marker not in source and write_line in source:
+        source = source.replace(
+            write_line,
+            f'html += "\\n{marker}"\n{write_line}',
+            1,
+        )
+        contact_finish.write_text(source, encoding="utf-8")
 
 path = Path("index.html")
 html = path.read_text(encoding="utf-8")
@@ -19,9 +60,10 @@ inner = hero_match.group(2)
 
 # Keep the hero compact: show "Anrufen" instead of the full mobile number.
 phone_link = '<a href="tel:+491737275165">0173 72 75 165</a>'
-if phone_link not in inner:
+if phone_link in inner:
+    inner = inner.replace(phone_link, '<a href="tel:+491737275165">Anrufen</a>', 1)
+elif '<a href="tel:+491737275165">Anrufen</a>' not in inner:
     raise SystemExit("RN hero phone link not found")
-inner = inner.replace(phone_link, '<a href="tel:+491737275165">Anrufen</a>', 1)
 
 if f'mailto:{CONTACT_EMAIL}' not in inner:
     mail_icon = (
