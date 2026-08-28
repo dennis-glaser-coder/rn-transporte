@@ -209,3 +209,7 @@ for html_path in Path(".").glob("*.html"):
             continue
         if not target.exists():
             raise SystemExit(f"RN final broken local {attr} in {html_path}: {value}")
+
+# Strengthen discovery only after the established regional pass has completed,
+# so the extra canonical/schema/link work cannot be overwritten by an earlier stage.
+runpy.run_path(".github/discovery_boost.py", run_name="__main__")
