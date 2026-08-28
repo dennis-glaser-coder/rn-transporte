@@ -5,12 +5,15 @@ import subprocess
 import sys
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageOps
 except ImportError:
     vendor = Path("/tmp/rn-pillow")
-    subprocess.run([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--target", str(vendor), "Pillow"], check=True)
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--target", str(vendor), "Pillow"],
+        check=True,
+    )
     sys.path.insert(0, str(vendor))
-    from PIL import Image
+    from PIL import Image, ImageOps
 
 SITE_URL = "https://dennis-glaser-coder.github.io/rn-transporte/"
 REF_URL = SITE_URL + "referenzen.html"
@@ -63,32 +66,50 @@ template = re.sub(r'<meta name="twitter:description" content="[^"]*">', f'<meta 
 template = re.sub(r'<link rel="canonical" href="[^"]+">', f'<link rel="canonical" href="{REF_URL}">', template, count=1)
 template = re.sub(r'<meta property="og:url" content="[^"]+">', f'<meta property="og:url" content="{REF_URL}">', template, count=1)
 
-# Keep the uploaded PNGs untouched and generate lightweight WebP copies for the public gallery.
+# Keep the uploaded originals untouched and generate lightweight WebP copies
+# for the public gallery. EXIF orientation is applied before resizing so phone
+# photos display correctly. Width/height are written into the HTML to avoid
+# layout shifts while the images load.
 reference_sources = [
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.webp"),
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.webp"),
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.webp"),
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_24.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_24.webp"),
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_33.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_33.webp"),
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_39.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_39.webp"),
-    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_46.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_46.webp"),
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.png",
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.png",
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.png",
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_24.png",
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_33.png",
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_39.png",
+    "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_46.png",
+    "assets/referenzen/7e5c5e11-acb7-47c6-abb1-0507f30b8405.jpeg",
+    "assets/referenzen/IMG_0894.png",
 ]
 
-for source_path, output_path in reference_sources:
+reference_outputs = []
+for source_path in reference_sources:
     source = Path(source_path)
     if not source.is_file():
         raise SystemExit(f"Missing reference image: {source_path}")
-    with Image.open(source) as image:
-        image = image.convert("RGB")
-        image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
-        image.save(output_path, "WEBP", quality=82, method=6)
 
-gallery_markup = "\n".join(
-    f'''<button class="reference-photo" type="button" data-lightbox-src="{output_path}" aria-label="Baustelleneinsatz vergrößern">
-      <img src="{output_path}" alt="RN Transporte Baustelleneinsatz" loading="lazy" decoding="async" fetchpriority="low">
+    output = source.with_suffix(".webp")
+    with Image.open(source) as opened:
+        image = ImageOps.exif_transpose(opened).convert("RGB")
+        image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+        width, height = image.size
+        image.save(output, "WEBP", quality=80, method=6)
+
+    reference_outputs.append((output.as_posix(), width, height))
+
+gallery_items = []
+for index, (output_path, width, height) in enumerate(reference_outputs):
+    # The first two images are initially visible on desktop. Load those
+    # immediately; everything below the fold stays lazy-loaded.
+    loading = "eager" if index < 2 else "lazy"
+    priority = "high" if index == 0 else ("auto" if index == 1 else "low")
+    gallery_items.append(
+        f'''<button class="reference-photo" type="button" data-lightbox-src="{output_path}" aria-label="Baustelleneinsatz vergrößern">
+      <img src="{output_path}" alt="RN Transporte Baustelleneinsatz" width="{width}" height="{height}" loading="{loading}" decoding="async" fetchpriority="{priority}">
     </button>'''
-    for _, output_path in reference_sources
-)
+    )
+
+gallery_markup = "\n".join(gallery_items)
 
 references_main = f'''
 <section class="page-hero reference-hero"><div class="wrap page-hero-grid">
