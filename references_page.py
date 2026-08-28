@@ -79,7 +79,7 @@ reference_sources = [
     "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_39.png",
     "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_46.png",
     "assets/referenzen/7e5c5e11-acb7-47c6-abb1-0507f30b8405.jpeg",
-    "assets/referenzen/IMG_0894.png",
+    "assets/referenzen/IMG_0894.jpeg",
 ]
 
 reference_outputs = []
