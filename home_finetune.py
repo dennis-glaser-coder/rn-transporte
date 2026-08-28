@@ -57,3 +57,17 @@ if 'id="rn-home-finetune"' not in html:
     html = html.replace("</head>", home_style + "\n</head>", 1)
 
 path.write_text(html, encoding="utf-8")
+
+# Keep the three service presentations visually equal. The second editorial
+# block is reversed for layout only and must not receive a unique red marker.
+services_path = Path("leistungen.html")
+services_html = services_path.read_text(encoding="utf-8")
+service_alignment_style = r'''<style id="rn-service-accent-alignment">
+.service-feature-reverse .service-feature-copy:before{
+  display:none!important;
+  content:none!important;
+}
+</style>'''
+if 'id="rn-service-accent-alignment"' not in services_html:
+    services_html = services_html.replace("</head>", service_alignment_style + "\n</head>", 1)
+services_path.write_text(services_html, encoding="utf-8")
