@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://rn-transporte.de/sitemap.xml
