@@ -8,7 +8,9 @@ import sys
 try:
     from PIL import Image
 except ImportError:
-    subprocess.run([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "Pillow"], check=True)
+    vendor = Path("/tmp/rn-pillow")
+    subprocess.run([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--target", str(vendor), "Pillow"], check=True)
+    sys.path.insert(0, str(vendor))
     from PIL import Image
 
 SITE_URL = "https://dennis-glaser-coder.github.io/rn-transporte/"
