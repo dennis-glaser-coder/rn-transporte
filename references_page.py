@@ -1,6 +1,15 @@
 from pathlib import Path
 from datetime import date
+from urllib.parse import quote
 import re
+import subprocess
+import sys
+
+try:
+    from PIL import Image
+except ImportError:
+    subprocess.run([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "Pillow"], check=True)
+    from PIL import Image
 
 SITE_URL = "https://dennis-glaser-coder.github.io/rn-transporte/"
 REF_URL = SITE_URL + "referenzen.html"
@@ -53,7 +62,34 @@ template = re.sub(r'<meta name="twitter:description" content="[^"]*">', f'<meta 
 template = re.sub(r'<link rel="canonical" href="[^"]+">', f'<link rel="canonical" href="{REF_URL}">', template, count=1)
 template = re.sub(r'<meta property="og:url" content="[^"]+">', f'<meta property="og:url" content="{REF_URL}">', template, count=1)
 
-references_main = '''
+# The uploaded PNGs remain untouched in the repository. During the build we
+# create lightweight WebP copies for the public gallery so the page stays fast.
+reference_sources = [
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_47.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_47.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_31_59.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_07.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_16.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_24.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_24.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_33.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_33.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_39.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_39.webp"),
+    ("assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_46.png", "assets/referenzen/ChatGPT Image 28. Aug. 2026, 08_32_46.webp"),
+]
+
+for source_path, output_path in reference_sources:
+    source = Path(source_path)
+    if not source.is_file():
+        raise SystemExit(f"Missing reference image: {source_path}")
+    with Image.open(source) as image:
+        image = image.convert("RGB")
+        image.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+        image.save(output_path, "WEBP", quality=82, method=6)
+
+gallery_markup = "\n".join(
+    f'<div class="reference-photo"><img src="{quote(output_path, safe="/")}" alt="RN Transporte im Einsatz" loading="lazy" decoding="async" fetchpriority="low"></div>'
+    for _, output_path in reference_sources
+)
+
+references_main = f'''
 <section class="page-hero"><div class="wrap page-hero-grid">
   <div class="eyebrow">Referenzen</div>
   <div><h1>Im Einsatz für unsere Kunden.</h1><p>Einblicke in den täglichen Einsatz von RN Transporte – von Betonpumpendienst und Frischbetonlogistik bis zu Kies- und Schüttguttransporten.</p></div>
@@ -83,6 +119,10 @@ references_main = '''
       </figure>
     </div>
 
+    <div class="reference-photo-grid" aria-label="Weitere Baustelleneinsätze">
+      {gallery_markup}
+    </div>
+
     <div class="page-cta references-cta">
       <p>Sie möchten Ihren nächsten Einsatz mit RN Transporte abstimmen?</p>
       <a href="kontakt.html">Projekt anfragen →</a>
@@ -104,8 +144,11 @@ references_style = r'''<style id="rn-references-style">
 .reference-item figcaption{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.62fr);gap:28px;padding:20px 0 0;border-top:1px solid #e0e1e2}
 .reference-item h2{margin:0;color:var(--ink);font-size:clamp(24px,2.3vw,32px);line-height:1.08;letter-spacing:-.035em;font-weight:560}
 .reference-item p{margin:2px 0 0;color:#707479;font-size:14px;line-height:1.62}
+.reference-photo-grid{columns:3 320px;column-gap:18px;margin-top:72px}
+.reference-photo{margin:0 0 18px;break-inside:avoid;overflow:hidden;background:#f1f2f2}
+.reference-photo img{display:block;width:100%;height:auto;transition:transform .45s ease}
 .references-cta{margin-top:72px}
-@media(hover:hover){.reference-item:hover .reference-media img{transform:scale(1.012)}}
+@media(hover:hover){.reference-item:hover .reference-media img,.reference-photo:hover img{transform:scale(1.012)}}
 @media(max-width:900px){
   .references-page{padding:46px 0 74px}
   .references-grid{grid-template-columns:1fr;gap:44px}
@@ -113,6 +156,8 @@ references_style = r'''<style id="rn-references-style">
   .reference-item figcaption{grid-template-columns:1fr;gap:8px;padding-top:16px}
   .reference-item h2{font-size:28px}
   .reference-item p{font-size:13px}
+  .reference-photo-grid{columns:1;margin:44px -16px 0}
+  .reference-photo{margin-bottom:12px}
   .references-cta{margin-top:50px}
 }
 </style>'''
