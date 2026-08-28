@@ -87,8 +87,8 @@ for path in Path(".").glob("*.html"):
     text = re.sub(r'href="(betonlogistik-[a-z0-9-]+\.html)"', r'href="/\1"', text, flags=re.I)
     path.write_text(text, encoding="utf-8")
 
-# The first regional row was still unreliable on iOS although the generated
-# target exists. Make that one destination fully explicit and keep the whole
+# The first regional row was unreliable on iOS even though the generated
+# target exists. Keep its root-relative URL and explicitly lift the whole
 # regional link layer above neighbouring decorative/CTA layers.
 paderborn_target = Path("betonlogistik-paderborn-salzkotten.html")
 if not paderborn_target.is_file():
@@ -96,10 +96,8 @@ if not paderborn_target.is_file():
 services_path = Path("leistungen.html")
 services = services_path.read_text(encoding="utf-8")
 paderborn_relative = 'href="/betonlogistik-paderborn-salzkotten.html"'
-paderborn_absolute = 'href="https://rn-transporte.de/betonlogistik-paderborn-salzkotten.html"'
 if paderborn_relative not in services:
     raise SystemExit("RN Paderborn/Salzkotten hub link missing")
-services = services.replace(paderborn_relative, paderborn_absolute, 1)
 regional_link_hardening = r'''<style id="rn-regional-link-hardening">
 .regional-focus{position:relative;z-index:10;isolation:isolate}
 .regional-focus-links{position:relative;z-index:20}
@@ -185,7 +183,7 @@ for label in (
 for stale in ("Bielefeld / OWL", "Gütersloh / Lippstadt / Soest"):
     if stale in services:
         raise SystemExit(f"RN final stale region label remains: {stale}")
-if paderborn_absolute not in services or 'id="rn-regional-link-hardening"' not in services:
+if paderborn_relative not in services or 'id="rn-regional-link-hardening"' not in services:
     raise SystemExit("RN Paderborn/Salzkotten link hardening missing")
 
 
