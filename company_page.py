@@ -6,7 +6,7 @@ html = path.read_text(encoding="utf-8")
 # Introduce the full company name once in the company copy, then keep the
 # shorter public-facing RN Transporte name throughout the rest of the site.
 old_name_intro = "Seit 2010 steht RN Transporte aus Salzkotten für zuverlässige Transport- und Betonlogistik."
-new_name_intro = "Seit 2010 steht RN Torwesten Transporte aus Salzkotten für zuverlässige Transport- und Betonlogistik."
+new_name_intro = "Seit 2010 steht RN Transporte – offiziell RN Torwesten Transporte – aus Salzkotten für zuverlässige Transport- und Betonlogistik."
 if old_name_intro not in html:
     raise SystemExit("RN company full-name introduction not found")
 html = html.replace(old_name_intro, new_name_intro, 1)
