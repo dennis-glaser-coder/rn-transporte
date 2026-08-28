@@ -1,6 +1,5 @@
 from pathlib import Path
 from datetime import date
-from urllib.parse import quote
 import re
 import subprocess
 import sys
@@ -87,7 +86,7 @@ for source_path, output_path in reference_sources:
         image.save(output_path, "WEBP", quality=82, method=6)
 
 gallery_markup = "\n".join(
-    f'<div class="reference-photo"><img src="{quote(output_path, safe="/")}" alt="RN Transporte im Einsatz" loading="lazy" decoding="async" fetchpriority="low"></div>'
+    f'<div class="reference-photo"><img src="{output_path}" alt="RN Transporte im Einsatz" loading="lazy" decoding="async" fetchpriority="low"></div>'
     for _, output_path in reference_sources
 )
 
