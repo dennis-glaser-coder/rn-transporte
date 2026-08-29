@@ -211,7 +211,6 @@ def add_sitemap_entries():
 
 def optimize_public_images():
     image_map = {
-        "rn_hero_final.png": "rn_hero_final.webp",
         "assets/leistungen/betonpumpendienst.png": "assets/leistungen/betonpumpendienst.webp",
     }
     for webp in image_map.values():
@@ -259,8 +258,7 @@ for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderb
 
 if "<title>Betonpumpendienst | RN Transporte Salzkotten</title>" not in Path("betonpumpendienst.html").read_text(encoding="utf-8"):
     raise SystemExit("Unique Betonpumpendienst title missing")
-for webp in (Path("rn_hero_final.webp"), Path("assets/leistungen/betonpumpendienst.webp")):
-    if not webp.is_file():
-        raise SystemExit(f"Optimized public image missing: {webp}")
+if not Path("assets/leistungen/betonpumpendienst.webp").is_file():
+    raise SystemExit("Optimized public pump image missing")
 
 print("RN Google discovery boost applied")
