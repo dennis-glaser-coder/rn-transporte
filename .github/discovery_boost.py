@@ -111,7 +111,7 @@ def strengthen_home_schema():
         changed = False
         nodes = data.get("@graph") if isinstance(data, dict) else None
         candidates = nodes if isinstance(nodes, list) else [data] if isinstance(data, dict) else []
-        for i, node in enumerate(candidates):
+        for node in candidates:
             if not isinstance(node, dict):
                 continue
             types = node.get("@type")
@@ -150,9 +150,16 @@ def strengthen_nested_page(path: Path):
             data = json.loads(match.group(1))
         except Exception:
             continue
-        if isinstance(data, dict) and data.get("@type") == "Service":
-            data["url"] = canonical_for(path)
-            data["provider"] = {
+        if not isinstance(data, dict):
+            continue
+        graph = data.get("@graph")
+        candidates = graph if isinstance(graph, list) else [data]
+        changed = False
+        for node in candidates:
+            if not isinstance(node, dict) or node.get("@type") != "Service":
+                continue
+            node["url"] = canonical_for(path)
+            node["provider"] = {
                 "@type": "Organization",
                 "@id": SITE + "#organization",
                 "name": BRAND,
@@ -162,6 +169,8 @@ def strengthen_nested_page(path: Path):
                 "email": CONTACT_EMAIL,
                 "address": org_node()["address"],
             }
+            changed = True
+        if changed:
             replacement = '<script type="application/ld+json">' + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + '</script>'
             html = html[:match.start()] + replacement + html[match.end():]
             break
