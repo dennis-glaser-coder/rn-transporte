@@ -3,6 +3,7 @@ import re
 
 OLD_EMAIL = "ntorwesten@web.de"
 CONTACT_EMAIL = "kontakt@rn-transporte.de"
+GOOGLE_FAVICON = '<link rel="icon" type="image/png" sizes="96x96" href="/assets/favicon-96x96.png">'
 
 # Migrate the generated public pages to the new RN contact address.
 # postbuild.py runs earlier in the workflow, so the replacement happens here
@@ -11,6 +12,17 @@ for page in Path(".").glob("*.html"):
     html = page.read_text(encoding="utf-8")
     if OLD_EMAIL in html:
         page.write_text(html.replace(OLD_EMAIL, CONTACT_EMAIL), encoding="utf-8")
+
+# Give Google Search one stable, supported raster favicon on every public page.
+# The root-relative path also works on nested regional landing pages.
+public_pages = list(Path(".").glob("*.html")) + list(Path(".").glob("*/index.html"))
+for page in public_pages:
+    html = page.read_text(encoding="utf-8")
+    html = re.sub(r'<link\s+rel="(?:shortcut\s+)?icon"[^>]*>\s*', '', html, flags=re.I)
+    if "</head>" not in html:
+        raise SystemExit(f"RN favicon head missing: {page}")
+    html = html.replace("</head>", GOOGLE_FAVICON + "\n</head>", 1)
+    page.write_text(html, encoding="utf-8")
 
 # Some later finishing scripts still contain the former address as an exact
 # markup match. Update those copies in the checked-out workflow workspace so
