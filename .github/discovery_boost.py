@@ -192,6 +192,20 @@ def add_pump_region_links():
     path.write_text(html, encoding="utf-8")
 
 
+def add_home_discovery_links():
+    path = Path("index.html")
+    html = path.read_text(encoding="utf-8")
+    if 'id="rn-home-discovery-links"' in html:
+        return
+    links = '''<nav class="rn-home-discovery" id="rn-home-discovery-links" aria-label="Betonpumpendienst und Einsatzgebiete"><div class="wrap rn-home-discovery-inner"><span>Betonpumpendienst:</span><a href="/betonpumpe-salzkotten/">Salzkotten</a><a href="/betonpumpe-paderborn/">Paderborn</a><a href="/betonpumpe-owl/">OWL</a><span class="rn-home-discovery-sep">Einsatzgebiete:</span><a href="/betonlogistik-paderborn-salzkotten.html">Paderborn / Salzkotten</a><a href="/betonlogistik-bielefeld-owl.html">Bielefeld / Gütersloh</a><a href="/betonlogistik-guetersloh-lippstadt-soest.html">Lippstadt / Soest</a><a href="/betonlogistik-hoexter-warburg.html">Höxter / Warburg</a><a href="/betonlogistik-kassel-nordhessen.html">Kassel / Nordhessen</a><a href="/betonlogistik-suedniedersachsen.html">Südniedersachsen</a></div></nav>'''
+    style = '''<style id="rn-home-discovery-style">.rn-home-discovery{border-top:1px solid rgba(255,255,255,.14);padding:17px 0 20px}.rn-home-discovery-inner{display:flex;flex-wrap:wrap;align-items:center;gap:7px 14px;color:rgba(255,255,255,.56);font-size:10px;line-height:1.5}.rn-home-discovery-inner span{font-weight:760;letter-spacing:.08em;text-transform:uppercase}.rn-home-discovery-inner a{color:rgba(255,255,255,.78);text-decoration:none}.rn-home-discovery-inner a:hover{color:#fff}.rn-home-discovery-sep{margin-left:10px}@media(max-width:700px){.rn-home-discovery{padding:16px 0 22px}.rn-home-discovery-inner{gap:6px 11px;font-size:10px}.rn-home-discovery-sep{width:100%;margin:5px 0 0}}</style>'''
+    if "</head>" not in html or "</footer>" not in html:
+        raise SystemExit("Homepage discovery insertion point missing")
+    html = html.replace("</head>", style + "\n</head>", 1)
+    html = html.replace("</footer>", links + "</footer>", 1)
+    path.write_text(html, encoding="utf-8")
+
+
 def add_sitemap_entries():
     path = Path("sitemap.xml")
     sitemap = path.read_text(encoding="utf-8")
@@ -244,6 +258,7 @@ strengthen_home_schema()
 for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderborn/index.html"), Path("betonpumpe-owl/index.html")):
     strengthen_nested_page(nested)
 add_pump_region_links()
+add_home_discovery_links()
 add_sitemap_entries()
 optimize_public_images()
 make_service_title_unique()
@@ -260,5 +275,7 @@ if "<title>Betonpumpendienst | RN Transporte Salzkotten</title>" not in Path("be
     raise SystemExit("Unique Betonpumpendienst title missing")
 if not Path("assets/leistungen/betonpumpendienst.webp").is_file():
     raise SystemExit("Optimized public pump image missing")
+if 'id="rn-home-discovery-links"' not in Path("index.html").read_text(encoding="utf-8"):
+    raise SystemExit("Homepage discovery links missing")
 
 print("RN Google discovery boost applied")
