@@ -223,21 +223,6 @@ def add_sitemap_entries():
     path.write_text(sitemap, encoding="utf-8")
 
 
-def optimize_public_images():
-    image_map = {
-        "assets/leistungen/betonpumpendienst.png": "assets/leistungen/betonpumpendienst.webp",
-    }
-    for webp in image_map.values():
-        if not Path(webp).is_file():
-            raise SystemExit(f"Optimized image missing: {webp}")
-    for path in list(Path(".").glob("*.html")) + list(Path(".").glob("*/index.html")):
-        html = path.read_text(encoding="utf-8")
-        for png, webp in image_map.items():
-            html = html.replace(f'src="{png}"', f'src="{webp}"')
-            html = html.replace(f'src="../{png}"', f'src="../{webp}"')
-        path.write_text(html, encoding="utf-8")
-
-
 def make_service_title_unique():
     path = Path("betonpumpendienst.html")
     html = path.read_text(encoding="utf-8")
@@ -260,7 +245,6 @@ for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderb
 add_pump_region_links()
 add_home_discovery_links()
 add_sitemap_entries()
-optimize_public_images()
 make_service_title_unique()
 
 for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderborn/index.html"), Path("betonpumpe-owl/index.html")):
@@ -273,8 +257,6 @@ for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderb
 
 if "<title>Betonpumpendienst | RN Transporte Salzkotten</title>" not in Path("betonpumpendienst.html").read_text(encoding="utf-8"):
     raise SystemExit("Unique Betonpumpendienst title missing")
-if not Path("assets/leistungen/betonpumpendienst.webp").is_file():
-    raise SystemExit("Optimized public pump image missing")
 if 'id="rn-home-discovery-links"' not in Path("index.html").read_text(encoding="utf-8"):
     raise SystemExit("Homepage discovery links missing")
 
