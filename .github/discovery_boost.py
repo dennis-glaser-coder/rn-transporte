@@ -9,6 +9,7 @@ CONTACT_EMAIL = "kontakt@rn-transporte.de"
 PHONE = "+49 173 7275165"
 LEGAL_NAME = "RN Torwesten Transporte UG (haftungsbeschränkt)"
 BRAND = "RN Transporte"
+ANALYTICS_SRC = "/rn-analytics.js?v=1"
 
 IMPORTANT = {
     "index.html",
@@ -46,6 +47,17 @@ def ensure_canonical(path: Path):
         html = html.replace("</head>", f'<link rel="canonical" href="{url}">\n</head>', 1)
     if '<meta name="robots"' in html:
         html = re.sub(r'<meta name="robots" content="[^"]*">', '<meta name="robots" content="index,follow,max-image-preview:large">', html, count=1)
+    path.write_text(html, encoding="utf-8")
+
+
+def inject_analytics(path: Path):
+    html = path.read_text(encoding="utf-8")
+    marker = f'src="{ANALYTICS_SRC}"'
+    if marker in html:
+        return
+    if "</head>" not in html:
+        raise SystemExit(f"Analytics insertion point missing: {path}")
+    html = html.replace("</head>", f'<script defer src="{ANALYTICS_SRC}"></script>\n</head>', 1)
     path.write_text(html, encoding="utf-8")
 
 
@@ -236,8 +248,12 @@ def make_service_title_unique():
     path.write_text(html, encoding="utf-8")
 
 
+if not Path("rn-analytics.js").is_file():
+    raise SystemExit("RN analytics runtime missing")
+
 for html_path in list(Path(".").glob("*.html")) + list(Path(".").glob("*/index.html")):
     ensure_canonical(html_path)
+    inject_analytics(html_path)
 
 strengthen_home_schema()
 for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderborn/index.html"), Path("betonpumpe-owl/index.html")):
@@ -254,10 +270,18 @@ for nested in (Path("betonpumpe-salzkotten/index.html"), Path("betonpumpe-paderb
             raise SystemExit(f"Old nested logo path remains: {nested}")
         if CONTACT_EMAIL not in text:
             raise SystemExit(f"Current contact email missing from schema: {nested}")
+        if f'src="{ANALYTICS_SRC}"' not in text:
+            raise SystemExit(f"Analytics runtime missing from nested page: {nested}")
 
 if "<title>Betonpumpendienst | RN Transporte Salzkotten</title>" not in Path("betonpumpendienst.html").read_text(encoding="utf-8"):
     raise SystemExit("Unique Betonpumpendienst title missing")
-if 'id="rn-home-discovery-links"' not in Path("index.html").read_text(encoding="utf-8"):
+index_text = Path("index.html").read_text(encoding="utf-8")
+if 'id="rn-home-discovery-links"' not in index_text:
     raise SystemExit("Homepage discovery links missing")
+if f'src="{ANALYTICS_SRC}"' not in index_text:
+    raise SystemExit("Analytics runtime missing from homepage")
+privacy_text = Path("datenschutz.html").read_text(encoding="utf-8")
+if "Cookielose Reichweitenmessung" not in privacy_text or "Supabase" not in privacy_text:
+    raise SystemExit("Analytics privacy disclosure missing")
 
 print("RN Google discovery boost applied")
