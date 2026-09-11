@@ -213,3 +213,41 @@ for html_path in Path(".").glob("*.html"):
 # Strengthen discovery only after the established regional pass has completed,
 # so the extra canonical/schema/link work cannot be overwritten by an earlier stage.
 runpy.run_path(".github/discovery_boost.py", run_name="__main__")
+
+# Final favicon hardening. Browsers cache favicons very aggressively, so keep
+# one canonical RN icon set with a versioned URL on every generated HTML page.
+FAVICON_VERSION = "rn-20260911"
+FAVICON_HTML = (
+    f'<link rel="icon" href="{PRODUCTION_SITE}assets/favicon-rn.svg?v={FAVICON_VERSION}" type="image/svg+xml">\n'
+    f'<link rel="alternate icon" href="{PRODUCTION_SITE}favicon.ico?v={FAVICON_VERSION}" type="image/x-icon">\n'
+    f'<link rel="icon" href="{PRODUCTION_SITE}assets/favicon-48x48.png?v={FAVICON_VERSION}" type="image/png" sizes="48x48">\n'
+    f'<link rel="icon" href="{PRODUCTION_SITE}assets/favicon-96x96.png?v={FAVICON_VERSION}" type="image/png" sizes="96x96">\n'
+    f'<link rel="apple-touch-icon" href="{PRODUCTION_SITE}apple-touch-icon.png?v={FAVICON_VERSION}">'
+)
+for asset in (
+    "assets/favicon-rn.svg",
+    "favicon.ico",
+    "assets/favicon-48x48.png",
+    "assets/favicon-96x96.png",
+    "apple-touch-icon.png",
+):
+    if not Path(asset).is_file():
+        raise SystemExit(f"RN favicon asset missing: {asset}")
+
+favicon_pattern = re.compile(
+    r'\s*<link\b[^>]*\brel=["\'](?:icon|shortcut icon|alternate icon|apple-touch-icon)["\'][^>]*>',
+    flags=re.I,
+)
+for html_path in Path(".").glob("*.html"):
+    html = html_path.read_text(encoding="utf-8")
+    html = favicon_pattern.sub("", html)
+    if "</head>" not in html:
+        raise SystemExit(f"RN favicon head closing tag missing: {html_path}")
+    html = html.replace("</head>", FAVICON_HTML + "\n</head>", 1)
+    if html.count(f"favicon-rn.svg?v={FAVICON_VERSION}") != 1:
+        raise SystemExit(f"RN SVG favicon injection failed: {html_path}")
+    if html.count(f"favicon.ico?v={FAVICON_VERSION}") != 1:
+        raise SystemExit(f"RN ICO favicon injection failed: {html_path}")
+    if html.count(f"apple-touch-icon.png?v={FAVICON_VERSION}") != 1:
+        raise SystemExit(f"RN Apple favicon injection failed: {html_path}")
+    html_path.write_text(html, encoding="utf-8")
