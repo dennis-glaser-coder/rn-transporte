@@ -72,6 +72,9 @@ jobs:
       - name: Finalize regions and public URLs
         run: python .github/regional_seo.py
 
+      - name: Build dedicated job pages
+        run: python .github/jobs_finish.py
+
       - name: Verify public RN site
         run: |
           python - <<'PY'
@@ -83,6 +86,8 @@ jobs:
               "referenzen.html",
               "unternehmen.html",
               "karriere.html",
+              "pumpenfahrer-betonpumpenmaschinist.html",
+              "berufskraftfahrer-fahrmischer-kipper.html",
               "kontakt.html",
               "betonpumpendienst.html",
               "frischbetontransporte.html",
@@ -204,9 +209,32 @@ jobs:
                   raise SystemExit(f"Company page verification failed: {token}")
 
           career = Path("karriere.html").read_text(encoding="utf-8")
-          for token in ('Pumpenfahrer / Betonpumpenmaschinist', '"@type":"JobPosting"', '"employmentType":"FULL_TIME"'):
+          for token in (
+              'Pumpenfahrer / Betonpumpenmaschinist',
+              'href="pumpenfahrer-betonpumpenmaschinist.html"',
+              'href="berufskraftfahrer-fahrmischer-kipper.html"',
+          ):
               if token not in career:
                   raise SystemExit(f"Career verification failed: {token}")
+          if '"@type":"JobPosting"' in career:
+              raise SystemExit("JobPosting must live on the dedicated job pages, not the careers hub")
+
+          job_expectations = {
+              "pumpenfahrer-betonpumpenmaschinist.html": "Pumpenfahrer / Betonpumpenmaschinist (m/w/d)",
+              "berufskraftfahrer-fahrmischer-kipper.html": "Berufskraftfahrer (m/w/d) – Fahrmischer / Kipper / Sattelzug",
+          }
+          for filename, job_title in job_expectations.items():
+              text = Path(filename).read_text(encoding="utf-8")
+              for token in (
+                  job_title,
+                  '"@type":"JobPosting"',
+                  '"employmentType":"FULL_TIME"',
+                  '"directApply":true',
+                  '"addressLocality":"Salzkotten"',
+                  'Per WhatsApp bewerben',
+              ):
+                  if token not in text:
+                      raise SystemExit(f"Dedicated job verification failed in {filename}: {token}")
 
           contact = Path("kontakt.html").read_text(encoding="utf-8")
           for token in ('mailto:ntorwesten@web.de', '0173 72 75 165', 'Lohweg 55a'):
@@ -217,8 +245,13 @@ jobs:
           sitemap = Path("sitemap.xml").read_text(encoding="utf-8")
           if "https://rn-transporte.de/sitemap.xml" not in robots:
               raise SystemExit("Production sitemap URL missing in robots.txt")
-          if "https://rn-transporte.de/betonlogistik-paderborn-salzkotten.html" not in sitemap:
-              raise SystemExit("Production regional URLs missing in sitemap.xml")
+          for url in (
+              "https://rn-transporte.de/betonlogistik-paderborn-salzkotten.html",
+              "https://rn-transporte.de/pumpenfahrer-betonpumpenmaschinist.html",
+              "https://rn-transporte.de/berufskraftfahrer-fahrmischer-kipper.html",
+          ):
+              if url not in sitemap:
+                  raise SystemExit(f"Production sitemap URL missing: {url}")
           if old_host in robots or old_host in sitemap:
               raise SystemExit("Old GitHub Pages host remains in robots/sitemap")
 
@@ -244,6 +277,8 @@ jobs:
           test -f referenzen.html
           test -f unternehmen.html
           test -f karriere.html
+          test -f pumpenfahrer-betonpumpenmaschinist.html
+          test -f berufskraftfahrer-fahrmischer-kipper.html
           test -f kontakt.html
           test -f betonpumpendienst.html
           test -f frischbetontransporte.html
