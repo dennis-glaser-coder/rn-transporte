@@ -1,154 +1,24 @@
-(() => {
-"use strict";
-const $ = id => document.getElementById(id);
-const cfg = window.RN_PUBLIC_CONFIG || {};
-const configured = Boolean(/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(cfg.supabaseUrl || "") && cfg.supabasePublishableKey && cfg.supabasePublishableKey.length > 20);
-const supabase = configured && window.supabase?.createClient
- ? window.supabase.createClient(cfg.supabaseUrl.replace(/\/$/,""),cfg.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}}) : null;
-let session = null, staff = null, jobs = [], busy = false, speech = null, listening = false, recording = false;
-let lastAudio = null, lastSpeech = "", initComplete = false;
-function setStatus(msg,ready=false){$("connText").textContent=msg;$("connDot").className="status-dot "+(ready?"ready":"error");}
-function setup(title,msg){$("setupNotice").hidden=false;$("setupTitle").textContent=title;$("setupMessage").textContent=msg;}
-function hideSetup(){$("setupNotice").hidden=true;}
-function showAuth(){staff=null;$("authScreen").hidden=false;$("appScreen").hidden=true;$("logoutBtn").hidden=!session;}
-function showApp(){$("authScreen").hidden=true;$("appScreen").hidden=false;$("logoutBtn").hidden=false;hideSetup();}
-function message(text){$("loginStatus").textContent=text;}
-function escapeText(v){return typeof v==="string"?v:String(v??"");}
-async function functionCall(name,payload){
-  if(!supabase||!session)throw Error("Bitte zuerst anmelden.");
-  const {data,error}=await supabase.functions.invoke(name,{body:payload||{}});
-  if(error){
-    let details="";
-    try{details=(await error.context?.json())?.error||"";}catch(_){}
-    throw Error(details||"Serverfunktion '"+name+"' ist noch nicht erreichbar.");
-  }
-  if(data?.error)throw Error(data.error);
-  return data;
-}
-async function refreshSession(){
- const {data,error}=await supabase.auth.getSession();
- if(error)throw error;
- session=data?.session||null;
- if(!session){showAuth();setStatus("Nicht angemeldet");return;}
- try{
-   const data=await functionCall("rn-auth-check",{});
-   if(!data?.allowed)throw Error("Du bist noch nicht als RN-Mitarbeiter freigegeben.");
-   staff=data;showApp();setStatus("Mitarbeiterzugang aktiv",true);await loadJobs();
- }catch(e){
-   showAuth();setup("Noch kein Mitarbeiterzugang",e.message||"Keine Berechtigung.");setStatus("Zugang nicht freigegeben");
- }
-}
-async function loadJobs(){
- try{
-   const r=await functionCall("rn-jobs-list",{});
-   if(!Array.isArray(r.jobs))throw Error("Unerwartete Serverantwort.");
-   jobs=r.jobs;
-   renderJobs();
- }catch(e){jobs=[];renderJobs();setup("Disposition nicht verfügbar",e.message);}
-}
-function renderJobs(){
- $("metricAll").textContent=jobs.length;
- const day=d=>d.toLocaleDateString("sv-SE");
- const now=new Date(),tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);
- $("metricToday").textContent=jobs.filter(x=>x.date===day(now)).length;
- $("metricTomorrow").textContent=jobs.filter(x=>x.date===day(tomorrow)).length;
- $("overviewJobs").replaceChildren();
- $("jobsTbody").replaceChildren();
- if(!jobs.length){$("overviewJobs").innerHTML='<div class="empty">Noch keine freigegebenen Einsätze vorhanden.</div>';$("jobsTbody").innerHTML='<tr><td colspan="5" class="empty">Keine Einsätze geladen.</td></tr>';return;}
- const sorted=[...jobs].sort((a,b)=>String(a.date+" "+a.start_time).localeCompare(String(b.date+" "+b.start_time)));
- for(const j of sorted.slice(0,6)){
-   const div=document.createElement("div");div.className="job-item";
-   const one=document.createElement("div"),head=document.createElement("b"),sub=document.createElement("div"),side=document.createElement("span");
-   head.textContent=escapeText(j.customer);sub.textContent=escapeText(j.site);sub.className="small-note";side.textContent=[j.date,String(j.start_time||"").slice(0,5),j.pump].filter(Boolean).join(" · ");
-   one.append(head,sub);div.append(one,side);$("overviewJobs").append(div);
- }
- for(const j of sorted){
-   const tr=document.createElement("tr");
-   for(const value of [[j.date,String(j.start_time||"").slice(0,5)].join(" · "),j.customer,j.site,j.pump,j.status]){
-     const td=document.createElement("td");td.textContent=escapeText(value);tr.append(td);
-   }
-   $("jobsTbody").append(tr);
- }
-}
-function tab(id){
- document.querySelectorAll(".tab").forEach(t=>{const active=t.dataset.tab===id;t.classList.toggle("active",active);t.setAttribute("aria-pressed",String(active));});
- ["overview","jobs","willi"].forEach(n=>$(n+"Panel").hidden=n!==id);
- if(id==="willi")$("chatInput").focus();
-}
-function bubble(text,me=false){
- const el=document.createElement("div");el.className="bubble "+(me?"me-bubble":"willi-bubble");el.textContent=text;$("chatMessages").append(el);
- $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
-}
-async function playVoice(text){
- const v=window.RNWilliVoice;
- if(!v){$("voiceStatus").textContent="Die kostenlose Stimme konnte nicht geladen werden.";return;}
- let result=window.RNPiperVoice ? await window.RNPiperVoice.speak(text,{rate:$("williRate").value,onStatus:msg=>$("voiceStatus").textContent=msg}) : await v.speak(text);
- if(result.status==="error"||result.status==="unsupported"){ $("voiceStatus").textContent="Piper nicht verfügbar, Browserstimme wird verwendet."; result=await v.speak(text); }
- if(result.status==="unsupported"||result.status==="error")$("voiceStatus").textContent="Sprachausgabe nicht verfügbar: "+(result.message||result.status);
-}
-function initializeVoice(){
- const v=window.RNWilliVoice;
- if(!v)return;
- const select=$("williVoice"),tempo=$("williRate"),pitch=$("williPitch");
- const setting=v.getSettings();tempo.value=setting.rate;pitch.value=setting.pitch;
- const paint=()=>{$("williRateValue").textContent=Number(tempo.value).toFixed(2).replace(".",",");$("williPitchValue").textContent=Number(pitch.value).toFixed(2).replace(".",",");};
- function voices(){const saved=v.getSettings().voice;select.replaceChildren();const list=v.getVoices();if(!list.length){const o=document.createElement("option");o.textContent="Systemstimme (automatisch)";o.value="";select.append(o);}else for(const item of list){const o=document.createElement("option");o.textContent=item.label;o.value=item.id;select.append(o);}if(list.some(x=>x.id===saved))select.value=saved;}
- v.onVoicesChanged(voices);voices();paint();
- select.addEventListener("change",()=>v.setSettings({voice:select.value}));
- for(const x of [tempo,pitch])x.addEventListener("input",()=>{v.setSettings({rate:tempo.value,pitch:pitch.value});paint();});
- $("voiceSample").addEventListener("click",()=>playVoice("Moin Nils! Hier ist Willi. Ich bin startklar. Wat steht denn heut auf dem Zettel?"));
- $("voiceStop").addEventListener("click",()=>{v.stopSpeech();window.RNPiperVoice?.stop();});
- $("voiceStatus").textContent=window.RNPiperVoice?"Piper / Thorsten bereit zum Laden – Hörprobe starten.":"Browserstimme bereit – Hörprobe starten.";
-}
-async function sendText(text,fromMic=false){
- const q=String(text||"").trim();
- if(!q||busy)return "";
- busy=true;$("sendButton").disabled=true;bubble(q,true);
- try{
-   const workerUrl=String(cfg.cloudflareWorkerUrl||"").replace(/\/$/,"");
-   if(!/^https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)*\.workers\.dev$/i.test(workerUrl))throw Error("Willi-KI ist noch nicht verbunden. Der Cloudflare-Worker muss zuerst eingerichtet werden.");
-   if(!session?.access_token)throw Error("Bitte erneut anmelden.");
-   const response=await fetch(workerUrl+"/chat",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify({text:q})});
-   const r=await response.json().catch(()=>({error:"Unbekannte Serverantwort."}));
-   if(!response.ok)throw Error(r.error||"Cloudflare-KI antwortet nicht.");
-   const reply=typeof r.reply==="string"?r.reply:"Willi hat gerade keine Antwort geliefert.";
-   bubble(reply);lastSpeech=reply;
-   if(!fromMic){await playVoice(reply);}return reply;
- }catch(e){const errorText="Das klappt noch nicht: "+e.message;bubble(errorText);if(!fromMic)await playVoice(errorText);return errorText;}
- finally{busy=false;$("sendButton").disabled=false;}
-}
-function endMic(){
- listening=false;
- window.RNWilliVoice?.stopConversation();
- $("micToggle").textContent="🎙 Gespräch starten";
- $("voiceStatus").textContent="Gespräch beendet.";
-}
-function startMic(){
- const v=window.RNWilliVoice;
- if(!v){$("voiceStatus").textContent="Sprachsteuerung konnte nicht geladen werden.";return;}
- const state=v.startConversation(async text=>{
-  if(!session)return "Du musst dich erst anmelden, damit ich mit den Aufträgen arbeiten kann.";
-  return await sendText(text,true);
- },status=>{$("voiceStatus").textContent=status;});
- if(state.ok){listening=true;$("micToggle").textContent="■ Gespräch beenden";}
- else $("voiceStatus").textContent=state.message;
-}
-async function init(){
- if(initComplete)return;initComplete=true;
- $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!supabase)return;const email=$("loginEmail").value.trim();$("loginButton").disabled=true;
-  try{const {error}=await supabase.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(error)throw error;message("Prüfe deine E-Mails. Der Link führt dich zurück zu BüroPilot.");}
-  catch(e){message(e.message);}finally{$("loginButton").disabled=false;}
- });
- $("logoutBtn").addEventListener("click",async()=>{endMic();if(supabase)await supabase.auth.signOut();session=null;showAuth();setStatus("Abgemeldet");});
- document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>tab(t.dataset.tab)));
- $("refreshOverview").addEventListener("click",loadJobs);$("refreshJobs").addEventListener("click",loadJobs);$("openWilli").addEventListener("click",()=>tab("willi"));
- $("chatForm").addEventListener("submit",e=>{e.preventDefault();const x=$("chatInput");const t=x.value;x.value="";sendText(t);});
- $("micToggle").addEventListener("click",()=>listening?endMic():startMic());
- initializeVoice();
- if(!configured){showAuth();setup("Supabase noch nicht verbunden","Die GitHub-Pages-App ist vorbereitet. Sobald das Supabase-Projekt eingerichtet ist, wird hier der sichere Mitarbeiterzugang freigeschaltet. Trage niemals geheime API-Schlüssel in config.js ein.");setStatus("Supabase-Einrichtung fehlt");return;}
- if(!supabase){showAuth();setup("Supabase-Bibliothek nicht geladen","Prüfe die Internetverbindung oder den Script-Blocker.");setStatus("Verbindung nicht verfügbar");return;}
- supabase.auth.onAuthStateChange((e)=>{if(e==="SIGNED_OUT"){session=null;showAuth();}else if(e==="SIGNED_IN"||e==="TOKEN_REFRESHED"){queueMicrotask(()=>refreshSession().catch(console.warn));}});
- try{await refreshSession();}catch(e){showAuth();setup("Verbindungsfehler",e.message);setStatus("Verbindung fehlgeschlagen");}
-}
+(()=>{"use strict";const $=id=>document.getElementById(id),cfg=window.RN_PUBLIC_CONFIG||{},views=["dashboard","calendar","offers","jobs","customers","toll","timesheets","invoices","team","willi"];const supa=window.supabase?.createClient&&cfg.supabaseUrl&&cfg.supabasePublishableKey?window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}}):null;let session=null,authorized=false,jobs=[],weekOffset=0,asking=false,conversation=false,noticeDismissed=false;const voice=window.RNWilliVoice;
+const esc=t=>String(t??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]));
+const dateISO=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+function show(view){if(!views.includes(view))view="dashboard";document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===view+"View"));document.querySelectorAll(".nav-item[data-view]").forEach(x=>x.classList.toggle("active",x.dataset.view===view));$("locationName").textContent=$(view+"View").dataset.title;history.replaceState(null,"","#"+view);$("sidebar").classList.remove("open");$("mobileBackdrop").hidden=true;$("menuToggle").setAttribute("aria-expanded","false");window.scrollTo({top:0,behavior:"instant"});if(view==="calendar")renderWeek()}
+function openAuth(){if(!supa){alert("Die Anmeldung kann gerade nicht geladen werden. Bitte Internetverbindung prüfen.");return;}$("authDialog").showModal()}
+function accessUI(){const b=$("authButton");b.textContent=session?"Abmelden":"Anmelden";$("connectionLabel").textContent=authorized?"Mitarbeiterzugang aktiv":session?"Nicht freigegeben":"Nicht angemeldet";$("modeLabel").textContent=authorized?"PILOTBETRIEB":"VORSCHAU";$("sidebarAccess").textContent=authorized?"Geschützte Daten · nur lesen":"Designvorschau · keine Echtdaten";$("previewNotice").hidden=noticeDismissed;const stat=$("chatConnection");stat.textContent=authorized?"Geschützter KI-Chat · keine Buchungen":"Anmeldung erforderlich · keine Buchungen";}
+function showError(text){$("connectionLabel").textContent=text;}
+async function call(name){if(!supa||!session)throw Error("Bitte zuerst anmelden.");const r=await supa.functions.invoke(name,{body:{}});if(r.error){let msg=r.error.message;try{msg=(await r.error.context?.json())?.error||msg}catch(_){}throw Error(msg||"Anfrage fehlgeschlagen")}if(r.data?.error)throw Error(r.data.error);return r.data}
+async function authCheck(){if(!supa){accessUI();return}const out=await supa.auth.getSession();session=out.data?.session||null;authorized=false;if(session){try{const r=await call("rn-auth-check");authorized=r.allowed===true}catch(e){showError("Zugang noch nicht freigegeben")}}accessUI();if(authorized)await loadJobs();else{jobs=[];renderJobs();renderWeek()}}
+async function loadJobs(){if(!authorized){jobs=[];renderJobs();return}try{const r=await call("rn-jobs-list");if(!Array.isArray(r.jobs))throw Error("Ungültige Antwort");jobs=r.jobs;renderJobs();renderWeek()}catch(e){jobs=[];renderJobs();showError("Aufträge nicht erreichbar")}}
+function statusName(status){const m={draft:"Entwurf",planned:"Geplant",confirmed:"Bestätigt",active:"In Ausführung",done:"Abgeschlossen",invoiced:"Abgerechnet"};return m[status]||status||"—"}
+function renderJobs(){const today=dateISO(new Date());const todays=jobs.filter(j=>j.date===today);const waiting=jobs.filter(j=>/request|pending|angebot|draft/i.test(j.status||""));const billing=jobs.filter(j=>/done|complete|abgeschlossen/i.test(j.status||""));$("todayCount").textContent=authorized?String(todays.length):"—";$("openCount").textContent=authorized?String(waiting.length):"—";$("billingCount").textContent=authorized?String(billing.length):"—";function row(j,overview){const d=esc(j.date),t=esc(String(j.start_time||"").slice(0,5)),c=esc(j.customer),site=esc(j.site),pump=esc(j.pump),s=esc(statusName(j.status));return overview?`<tr><td>${t}</td><td><b>${c}</b><br><span class="dim">${site}</span></td><td>${pump}</td><td>${s}</td></tr>`:`<tr><td>${d} · ${t}</td><td>${c}</td><td>${site}</td><td>${pump}</td><td>${s}</td></tr>`}const sort=(a,b)=>String(a.date+" "+a.start_time).localeCompare(String(b.date+" "+b.start_time));$("todayRows").innerHTML=todays.length?todays.sort(sort).map(j=>row(j,true)).join(""):`<tr><td colspan="4" class="empty-cell">${authorized?"Für heute sind keine Einsätze hinterlegt.":"Nach Anmeldung erscheinen hier die echten Einsätze."}</td></tr>`;$("allJobsRows").innerHTML=jobs.length?jobs.sort(sort).map(j=>row(j,false)).join(""):`<tr><td colspan="5" class="empty-cell">${authorized?"Noch keine Aufträge vorhanden.":"Nach Anmeldung werden die Aufträge geladen."}</td></tr>`}
+function renderWeek(){const now=new Date(),day=(now.getDay()+6)%7;const mon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-day+7*weekOffset);const end=new Date(mon);end.setDate(end.getDate()+6);const fmt=d=>d.toLocaleDateString("de-DE",{day:"2-digit",month:"short"});$("weekLabel").textContent=fmt(mon)+" – "+fmt(end)+" · "+mon.getFullYear();const weekdays=["Mo","Di","Mi","Do","Fr","Sa","So"];$("weekGrid").innerHTML=weekdays.map((w,i)=>{const d=new Date(mon);d.setDate(d.getDate()+i);const entries=jobs.filter(j=>j.date===dateISO(d));return `<div class="week-day ${dateISO(d)===dateISO(now)?"current":""}"><strong>${w} · ${fmt(d)}</strong><small>${entries.length?entries.length+" Termine":"Keine Termine"}</small>${entries.map(j=>`<div class="week-item">${esc(String(j.start_time||"").slice(0,5))} · ${esc(j.customer)}<br>${esc(j.pump)}</div>`).join("")}</div>`}).join("")}
+function parseDelimited(text,sep){const out=[];let row=[],field="",quoted=false;for(let i=0;i<text.length;i++){const ch=text[i];if(ch==='"'){if(quoted&&text[i+1]==='"'){field+='"';i++}else quoted=!quoted}else if(ch===sep&&!quoted){row.push(field);field=""}else if((ch==="\n"||ch==="\r")&&!quoted){if(ch==="\r"&&text[i+1]==="\n")i++;row.push(field);if(row.some(x=>x.trim()))out.push(row);row=[];field="";if(out.length>15000)throw Error("Zu viele Datensätze für die Vorschau (maximal 15.000).")}else field+=ch}if(quoted)throw Error("Anführungszeichen in CSV-Datei nicht korrekt geschlossen.");row.push(field);if(row.some(x=>x.trim()))out.push(row);return out}
+function delimiter(text){const sample=text.split(/\r?\n/).slice(0,5).join("\n");const options=[";",",","\t"];return options.map(d=>({d,n:(sample.match(new RegExp(d==="\t"?"\t":d===","?",":";","g"))||[]).length})).sort((a,b)=>b.n-a.n)[0]?.d||";"}
+async function csvFile(file){$("csvPreview").hidden=true;if(!file)return;try{if(file.size>8*1024*1024)throw Error("Datei ist größer als 8 MB.");let text=await file.text();if(text.charCodeAt(0)===65279)text=text.slice(1);if(text.includes("�"))throw Error("Zeichencodierung nicht erkannt. Bitte als UTF-8 CSV exportieren.");const sep=delimiter(text),rows=parseDelimited(text,sep);if(rows.length<2)throw Error("Keine Datenzeilen gefunden.");const header=rows[0];if(header.length<2)throw Error("Weniger als zwei Spalten erkannt. Prüfe das Trennzeichen.");const mismatches=rows.slice(1).reduce((n,r)=>n+(r.length!==header.length?1:0),0);$("csvRowsCount").textContent=String(rows.length-1);$("csvColumnsCount").textContent=String(header.length);$("csvDelimiter").textContent=sep==="\t"?"Tab":sep;$("csvTable").innerHTML="<thead><tr>"+header.map(x=>"<th>"+esc(x)+"</th>").join("")+"</tr></thead><tbody>"+rows.slice(1,21).map(r=>"<tr>"+header.map((_,i)=>"<td>"+esc(r[i]||"")+"</td>").join("")+"</tr>").join("")+"</tbody>";$("csvStatus").textContent=file.name+" · "+(rows.length-1)+" Zeilen geprüft. "+(mismatches?mismatches+" Zeilen mit abweichender Spaltenanzahl.":"Spaltenanzahl einheitlich.")+" Es wurde noch nichts importiert.";$("csvPreview").hidden=false}catch(e){$("csvStatus").textContent="Dateiprüfung fehlgeschlagen: "+e.message}}
+function addBubble(t,me){const d=document.createElement("div");d.className="bubble "+(me?"me":"bot");d.textContent=t;$("chatMessages").append(d);$("chatMessages").scrollTop=$("chatMessages").scrollHeight}
+async function askWilli(raw,spoken=false){const text=String(raw||"").trim();if(!text||asking)return "";addBubble(text,true);if(!authorized||!session?.access_token){addBubble("Bitte melde dich mit einem freigegebenen RN-Mitarbeiterkonto an. Hier gibt es keine ungeschützten KI-Anfragen.");return ""}asking=true;$("sendButton").disabled=true;let answer="";try{const url=String(cfg.cloudflareWorkerUrl||"").replace(/\/$/,"");if(!/^https:\/\/[a-z0-9.-]+\.workers\.dev$/i.test(url))throw Error("Cloudflare Worker fehlt.");const res=await fetch(url+"/chat",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token},body:JSON.stringify({text})});const body=await res.json();if(!res.ok)throw Error(body.error||"KI antwortet nicht.");answer=String(body.reply||"Keine Antwort");addBubble(answer);if(!spoken)await say(answer)}catch(e){answer="Willi ist gerade nicht erreichbar: "+e.message;addBubble(answer)}finally{asking=false;$("sendButton").disabled=false}return answer}
+async function say(text){if(!voice)return;$("voiceStatus").textContent="Willi spricht …";const r=await voice.speak(text);$("voiceStatus").textContent=r.status==="spoken"?"Sprachausgabe beendet.":r.status==="error"?"Browserstimme nicht verfügbar.":"Sprachausgabe: "+r.status}
+function toggleMic(){if(!voice){$("voiceStatus").textContent="Die Browser-Sprachsteuerung ist nicht verfügbar.";return}if(conversation){voice.stopConversation();conversation=false;$("micToggle").textContent="🎙 Gespräch starten";return}if(!authorized){$("voiceStatus").textContent="Bitte zuerst mit RN-Mitarbeiterzugang anmelden.";openAuth();return}const r=voice.startConversation(async t=>{const answer=await askWilli(t,true);return answer},s=>$("voiceStatus").textContent=s);if(r.ok){conversation=true;$("micToggle").textContent="■ Gespräch beenden"}else $("voiceStatus").textContent=r.message}
+function bindings(){document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));$("menuToggle").addEventListener("click",()=>{const expanded=$("sidebar").classList.toggle("open");$("mobileBackdrop").hidden=!expanded;$("menuToggle").setAttribute("aria-expanded",String(expanded))});$("mobileBackdrop").addEventListener("click",()=>{$("sidebar").classList.remove("open");$("mobileBackdrop").hidden=true});$("dismissNotice").addEventListener("click",()=>{noticeDismissed=true;$("previewNotice").hidden=true});$("authButton").addEventListener("click",async()=>{if(session&&supa){await supa.auth.signOut();session=null;authorized=false;jobs=[];renderJobs();accessUI()}else openAuth()});$("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!supa)return;const button=$("loginButton");button.disabled=true;try{const email=$("loginEmail").value.trim();const r=await supa.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(r.error)throw r.error;$("loginStatus").textContent="Link angefordert. Prüfe dein E-Mail-Postfach."}catch(e){$("loginStatus").textContent="Anmeldelink konnte nicht gesendet werden: "+e.message}finally{button.disabled=false}});$("prevWeek").addEventListener("click",()=>{weekOffset--;renderWeek()});$("nextWeek").addEventListener("click",()=>{weekOffset++;renderWeek()});$("currentWeek").addEventListener("click",()=>{weekOffset=0;renderWeek()});$("csvFile").addEventListener("change",e=>csvFile(e.target.files?.[0]));$("refreshJobs").addEventListener("click",loadJobs);$("chatForm").addEventListener("submit",e=>{e.preventDefault();const inp=$("chatInput"),t=inp.value;inp.value="";askWilli(t)});$("voiceSample").addEventListener("click",()=>say("Moin! Hier ist Willi. Was steht heute auf dem Zettel?"));$("voiceStop").addEventListener("click",()=>{voice?.stopSpeech();$("voiceStatus").textContent="Sprachausgabe gestoppt."});$("micToggle").addEventListener("click",toggleMic)}
+async function init(){bindings();renderJobs();renderWeek();accessUI();show(location.hash.slice(1)||"dashboard");if(supa){supa.auth.onAuthStateChange((event)=>{if(["SIGNED_IN","SIGNED_OUT","TOKEN_REFRESHED"].includes(event))queueMicrotask(()=>authCheck().catch(console.warn))});try{await authCheck()}catch(e){showError("Anmeldung nicht erreichbar")}}}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
