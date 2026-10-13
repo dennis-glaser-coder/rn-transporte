@@ -32,3 +32,17 @@ Entwicklungszweig: feature/bueropilot-zugang. Die RN Kundenhomepage (main) bleib
 
 ## Alte Next.js-Variante
 apps/bueropilot ist ein früher Vercel-Ansatz und wird hier nicht verwendet. Für GitHub Pages gilt nur bueropilot/ plus supabase/.
+
+
+## Anmeldung tatsächlich aktivieren (noch offen)
+Supabase Dashboard des RN-Projekts: https://supabase.com/dashboard/project/lsdjscvpbahvllwfzjhs
+
+1. Authentication > URL Configuration: Site URL auf https://rn-transporte.de setzen und unter Redirect URLs ausdrücklich https://rn-transporte.de/bueropilot/ eintragen. Bei Tests keine unbekannten Domains freigeben.
+2. Authentication > Users: autorisierte RN-Person als Benutzer anlegen bzw. per Einladung aufnehmen. Der Client setzt shouldCreateUser:false, damit keine automatische Kontoerstellung über das Loginformular stattfindet.
+3. Nach Einwilligung und erfolgreicher Kontoanlage im Supabase SQL Editor eine Mitarbeiterfreigabe mit der exakten User-ID und einer eigenen Organisations-ID in public.rn_staff erstellen. Vorher keinesfalls eine frei erfundene E-Mail-Adresse als Admin zuweisen.
+4. Unter Authentication > Providers sicherstellen, dass E-Mail-/Magic-Link-Login konfiguriert ist; für Produktion einen geeigneten SMTP-Dienst und Versandlimits einrichten.
+5. Mit dem zugewiesenen Mitarbeiter einen echten Magic-Link-Ende-zu-Ende-Test machen. Zusätzlich abgewiesenen Benutzer und leere JWTs testen.
+6. GitHub-Pages-Unterseite erst nach erfolgreichem Test auf main übernehmen.
+7. KI und ElevenLabs bleiben bis zur Einrichtung der Supabase-Function-Secrets ausgeschaltet. Dieser Connector bietet keine Secrets-Verwaltung oder Auth-Konfigurationsaktion; Einstellungen müssen im Supabase Dashboard erfolgen.
+
+Eine Benutzerfreigabe ist eine Berechtigungsentscheidung und darf nicht ohne Bestätigung des konkreten Mitarbeiters erfolgen.
