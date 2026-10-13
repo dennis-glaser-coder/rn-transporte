@@ -4,7 +4,7 @@
 (function(root){
 "use strict";
 const MODEL="de_DE-thorsten-medium";
-const MODULE_URL="https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.5/dist/piper-tts-web.js";
+const MODULE_URL="https://esm.sh/@mintplex-labs/piper-tts-web@1.0.5?bundle";
 let modulePromise=null,player=null,wavUrl=null,finishCurrent=null,sequence=0;
 
 function notify(handler,text){if(typeof handler==="function")handler(text);}
