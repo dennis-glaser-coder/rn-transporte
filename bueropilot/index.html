@@ -7,13 +7,13 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>RN BüroPilot – Betriebszentrale</title>
 <link rel="icon" href="../assets/favicon-rn.svg" type="image/svg+xml">
-<link rel="stylesheet" href="./app.css?v=8">
+<link rel="stylesheet" href="./app.css?v=9">
 <script defer src="./config.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer src="./voice.js"></script>
-<script defer src="./app.js?v=8"></script>
+<script defer src="./app.js?v=9"></script>
 <script defer src="./enhancements.js?v=1"></script>
-<script defer src="./fleet.js?v=1"></script>
+<script defer src="./fleet-v2.js?v=1"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -82,15 +82,17 @@
 
 
       <section class="view" id="vehiclesView" data-title="Fahrzeuge">
-        <div class="page-heading"><div><div class="kicker">FUHRPARK & MASCHINEN</div><h1>Fahrzeugverwaltung</h1><p>Betonmischer, Sattelzugmaschinen und Betonpumpen an einem Ort.</p></div><button type="button" class="button button-primary" id="fleetAdd">＋ Fahrzeug hinzufügen</button></div>
-        <div class="fleet-info" id="fleetInfo" role="status">Die sieben eingespielten Fahrzeuge werden geladen …</div>
-        <div class="fleet-stats"><div class="fleet-stat"><small>Gesamt</small><b id="fleetTotal">7</b><span>Erfasste Fahrzeuge</span></div><div class="fleet-stat"><small>Betonmischer</small><b id="fleetMixers">3</b><span>Vierachser</span></div><div class="fleet-stat"><small>Sattelzugmaschinen</small><b id="fleetTractors">2</b><span>Zugmaschinen</span></div><div class="fleet-stat"><small>Betonpumpen</small><b id="fleetPumps">2</b><span>M24 / M36</span></div></div>
+        <div class="page-heading"><div><div class="kicker">FUHRPARK & DISPOSITION</div><h1>Fahrzeuge & Verfügbarkeit</h1><p>Sehen, welche Fahrzeuge frei, verplant oder in der Werkstatt sind.</p></div><div class="fleet-heading-actions"><button type="button" class="button button-outline" id="fleetPlanAdd">＋ Einsatz planen</button><button type="button" class="button button-primary" id="fleetAdd">＋ Fahrzeug anlegen</button></div></div>
+        <div class="fleet-info" id="fleetInfo" role="status">Fuhrparkdaten werden geladen …</div>
+        <div class="fleet-date-toolbar"><div><label for="fleetDay">Verfügbarkeit für den Tag</label><div class="fleet-date-actions"><button class="mini-button" type="button" id="fleetPrevDay" aria-label="Vortag">‹</button><input id="fleetDay" type="date" aria-label="Datum für Fahrzeugverfügbarkeit"><button class="mini-button" type="button" id="fleetNextDay" aria-label="Folgetag">›</button><button class="mini-button" type="button" id="fleetToday">Heute</button></div></div><p><strong>Aktiv</strong> = einsatzbereit. <strong>Frei</strong> = kein zugewiesener Einsatz an diesem Tag. <strong>Eingeplant</strong> = Termin hinterlegt. Werkstatt/Reparatur = nicht verfügbar.</p></div>
+        <div class="fleet-stats fleet-availability"><div class="fleet-stat"><small>Im Fuhrpark</small><b id="fleetTotal">—</b><span>Alle Fahrzeuge & Auflieger</span></div><div class="fleet-stat"><small>Frei / bereit</small><b id="fleetFree">—</b><span>Ohne Einplanung</span></div><div class="fleet-stat"><small>Eingeplant</small><b id="fleetScheduled">—</b><span>Mit Einsatz am gewählten Tag</span></div><div class="fleet-stat"><small>Nicht verfügbar</small><b id="fleetUnavailable">—</b><span>Werkstatt / Reparatur</span></div></div>
         <section class="surface fleet-surface">
-          <div class="section-head"><div><h2>Fuhrpark</h2><p>Fahrzeuge verwalten, bearbeiten und deaktivieren</p></div><button type="button" class="button button-outline" id="fleetRefresh">↻ Aktualisieren</button></div>
-          <div class="fleet-filters"><label for="fleetSearch" class="sr-only">Fahrzeug suchen</label><input id="fleetSearch" type="search" placeholder="Kennzeichen oder Fahrzeug suchen …" autocomplete="off"><label for="fleetFilter" class="sr-only">Fahrzeugtyp filtern</label><select id="fleetFilter"><option value="all">Alle Fahrzeugtypen</option><option value="Betonmischer 4 Achser">Betonmischer</option><option value="Sattelzugmaschine">Sattelzugmaschinen</option><option value="Betonpumpe">Betonpumpen</option><option value="Sonstiges">Sonstige</option></select><label class="fleet-include-inactive"><input type="checkbox" id="fleetInactive"> Inaktive anzeigen</label></div>
-          <div id="fleetList" class="fleet-list" aria-live="polite"></div>
-          <div id="fleetEmpty" class="fleet-empty" hidden>Keine Fahrzeuge für diese Auswahl vorhanden.</div>
+          <div class="section-head"><div><h2>Fahrzeugübersicht</h2><p>Kennzeichen, Mitarbeiter, Auflieger und Tagesstatus</p></div><button type="button" class="button button-outline" id="fleetRefresh">↻ Aktualisieren</button></div>
+          <div class="fleet-filters"><label class="sr-only" for="fleetSearch">Fahrzeug suchen</label><input id="fleetSearch" type="search" placeholder="Kennzeichen, Fahrer oder Auflieger suchen …"><label class="sr-only" for="fleetFilter">Fahrzeugtyp</label><select id="fleetFilter"><option value="all">Alle Fahrzeuge</option><option value="Betonmischer 4 Achser">Betonmischer</option><option value="Sattelzugmaschine">Sattelzugmaschinen</option><option value="Betonpumpe">Betonpumpen</option><option value="Auflieger">Auflieger</option><option value="Sonstiges">Sonstige</option></select><label class="sr-only" for="fleetStatusFilter">Tagesstatus</label><select id="fleetStatusFilter"><option value="all">Alle Status</option><option value="free">Frei</option><option value="planned">Eingeplant</option><option value="unavailable">Werkstatt / Reparatur</option></select></div>
+          <div id="fleetList" class="fleet-list" aria-live="polite"></div><div id="fleetEmpty" class="fleet-empty" hidden>Keine Fahrzeuge gefunden.</div>
         </section>
+        <section class="surface fleet-surface fleet-next-panel"><div class="section-head"><div><h2>Einsätze am gewählten Tag</h2><p>Nur tatsächliche Eintragungen der Fuhrparkplanung</p></div></div><div id="fleetPlansList" class="fleet-plans-list">Noch keine Planung geladen.</div><p class="subtle-note">Wichtig: Alte Aufträge ohne Fahrzeugzuordnung werden nicht automatisch als belegt gewertet. Eine vollständige Verfügbarkeit erfordert, dass Einsätze mit dem Fahrzeug verknüpft sind.</p></section>
+        <section class="surface fleet-surface fleet-next-panel"><div class="section-head"><div><h2>Mitarbeiterstamm</h2><p>Mitarbeiter anlegen und anschließend Fahrzeugen zuordnen</p></div><button class="button button-outline" id="fleetEmployeeAdd" type="button">＋ Mitarbeiter</button></div><div id="fleetEmployeesList" class="fleet-employees-list">Noch keine Mitarbeiter erfasst.</div></section>
       </section>
       <section class="view" id="tollView" data-title="Maut-CSV"><div class="page-heading"><div><div class="kicker">WOCHENABLAUF</div><h1>Maut-CSV hochladen</h1><p>Die Wochen-Datei vor dem Import prüfen und Fehler sofort erkennen.</p></div></div>
         <div class="surface"><div class="section-head"><div><h2>CSV-Datei auswählen</h2><p>Die Datei wird zunächst nur auf deinem Gerät eingelesen.</p></div><span class="tag tag-neutral">Prüfmodus</span></div>
@@ -116,13 +118,30 @@
 <dialog id="authDialog" class="auth-dialog"><form method="dialog"><button class="dialog-close" aria-label="Schließen">×</button></form><span class="brandmark small">RN</span><h2>Beim BüroPilot anmelden</h2><p>Der Mitarbeiterzugang ist geschützt. Du bekommst einen einmaligen Link per E-Mail.</p><form id="loginForm"><label for="loginEmail">Deine RN-E-Mail-Adresse</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@firma.de"><button class="button button-primary full" id="loginButton" type="submit">Anmeldelink senden ↗</button></form><p class="inline-feedback" id="loginStatus" role="status"></p><small>Es werden keine neuen Konten automatisch angelegt.</small></dialog>
 
 <dialog id="fleetDialog" class="fleet-dialog"><form id="fleetForm" novalidate>
- <div class="fleet-dialog-head"><div><div class="kicker">FUHRPARK</div><h2 id="fleetDialogTitle">Fahrzeug hinzufügen</h2></div><button class="fleet-dialog-close" type="button" id="fleetCancelX" aria-label="Schließen">×</button></div>
+ <div class="fleet-dialog-head"><div><div class="kicker">FUHRPARK</div><h2 id="fleetDialogTitle">Fahrzeug anlegen</h2></div><button class="fleet-dialog-close" type="button" id="fleetCancelX" aria-label="Schließen">×</button></div>
  <label for="fleetRegistration">Kennzeichen *</label><input id="fleetRegistration" maxlength="30" autocomplete="off" required placeholder="z. B. PB RN3243">
- <label for="fleetKind">Fahrzeugtyp *</label><select id="fleetKind" required><option>Betonmischer 4 Achser</option><option>Sattelzugmaschine</option><option>Betonpumpe M24</option><option>Betonpumpe M36</option><option>Sonstiges</option></select>
- <label for="fleetNote">Notiz (optional)</label><textarea id="fleetNote" maxlength="400" rows="3" placeholder="z. B. Aufbau, Ausstattung, Hinweise"></textarea>
- <label class="fleet-active-check"><input id="fleetActive" type="checkbox" checked> Fahrzeug aktiv</label>
- <div id="fleetFormError" class="fleet-form-error" role="alert"></div>
- <div class="fleet-dialog-actions"><button class="button button-outline" type="button" id="fleetCancel">Abbrechen</button><button class="button button-primary" type="submit" id="fleetSave">Fahrzeug speichern</button></div>
+ <label for="fleetKind">Fahrzeugtyp *</label><select id="fleetKind" required><option>Betonmischer 4 Achser</option><option>Sattelzugmaschine</option><option>Betonpumpe M24</option><option>Betonpumpe M36</option><option>Kippauflieger</option><option>Mischauflieger</option><option>Sonstiges</option></select>
+ <label for="fleetEmployee">Zuständiger Mitarbeiter</label><select id="fleetEmployee"><option value="">Noch nicht zugeordnet</option></select>
+ <div id="fleetTrailerGroup" hidden><label for="fleetTrailer">Gekoppelter Auflieger</label><select id="fleetTrailer"><option value="">Keinen Auflieger</option></select><p class="fleet-field-note">Ein Auflieger kann immer nur einer Zugmaschine zugeordnet sein.</p></div>
+ <label for="fleetNote">Notiz</label><textarea id="fleetNote" maxlength="400" rows="2" placeholder="Ausstattung oder Hinweise"></textarea>
+ <label for="fleetActive">Fahrzeugstatus</label><select id="fleetActive"><option value="active">Aktiv · einsatzbereit</option><option value="Werkstatt">Inaktiv · Werkstatt</option><option value="Reparatur">Inaktiv · Reparatur</option><option value="Sonstiges">Inaktiv · Sonstiges</option></select>
+ <div id="fleetFormError" class="fleet-form-error" role="alert"></div><div class="fleet-dialog-actions"><button class="button button-outline" type="button" id="fleetCancel">Abbrechen</button><button class="button button-primary" type="submit" id="fleetSave">Speichern</button></div>
+</form></dialog>
+<dialog id="fleetPlanDialog" class="fleet-dialog"><form id="fleetPlanForm">
+ <div class="fleet-dialog-head"><div><div class="kicker">DISPOSITION</div><h2>Fahrzeugeinsatz planen</h2></div><button type="button" class="fleet-dialog-close" id="fleetPlanCloseX" aria-label="Schließen">×</button></div>
+ <label for="fleetPlanVehicle">Fahrzeug *</label><select id="fleetPlanVehicle" required></select>
+ <label for="fleetPlanDate">Einsatztag *</label><input id="fleetPlanDate" type="date" required>
+ <label for="fleetPlanTime">Beginn *</label><input id="fleetPlanTime" type="time" required value="07:00">
+ <label for="fleetPlanDuration">Dauer in Minuten *</label><input id="fleetPlanDuration" type="number" min="30" max="1440" step="30" value="240" required>
+ <label for="fleetPlanTitle">Kunde / Einsatz *</label><input id="fleetPlanTitle" required maxlength="140" placeholder="z. B. Baustelle Müller">
+ <label for="fleetPlanSite">Baustelle / Ort</label><input id="fleetPlanSite" maxlength="240" placeholder="Adresse oder Ort">
+ <div id="fleetPlanError" class="fleet-form-error" role="alert"></div><div class="fleet-dialog-actions"><button class="button button-outline" type="button" id="fleetPlanCancel">Abbrechen</button><button class="button button-primary" id="fleetPlanSave" type="submit">Einsatz speichern</button></div>
+</form></dialog>
+<dialog id="fleetEmployeeDialog" class="fleet-dialog"><form id="fleetEmployeeForm">
+ <div class="fleet-dialog-head"><div><div class="kicker">PERSONAL</div><h2>Mitarbeiter erfassen</h2></div><button type="button" class="fleet-dialog-close" id="fleetEmployeeCloseX" aria-label="Schließen">×</button></div>
+ <label for="fleetEmployeeName">Name *</label><input id="fleetEmployeeName" maxlength="100" required placeholder="Vor- und Nachname">
+ <label for="fleetEmployeeRole">Tätigkeit</label><select id="fleetEmployeeRole"><option>Fahrer</option><option>Pumpenmaschinist</option><option>Disposition</option><option>Büro</option><option>Sonstiges</option></select>
+ <div id="fleetEmployeeError" class="fleet-form-error" role="alert"></div><div class="fleet-dialog-actions"><button class="button button-outline" type="button" id="fleetEmployeeCancel">Abbrechen</button><button class="button button-primary" type="submit" id="fleetEmployeeSave">Mitarbeiter speichern</button></div>
 </form></dialog>
 <div id="mobileBackdrop" class="mobile-backdrop" hidden></div>
 </body>
