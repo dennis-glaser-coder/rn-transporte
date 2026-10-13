@@ -82,7 +82,7 @@ function bubble(text,me=false){
 async function playVoice(text){
  const v=window.RNWilliVoice;
  if(!v){$("voiceStatus").textContent="Die kostenlose Stimme konnte nicht geladen werden.";return;}
- const result=await v.speak(text);
+ const result=window.RNPiperVoice ? await window.RNPiperVoice.speak(text,{rate:$("williRate").value,onStatus:msg=>$("voiceStatus").textContent=msg}) : await v.speak(text);
  if(result.status==="unsupported"||result.status==="error")$("voiceStatus").textContent="Sprachausgabe nicht verfügbar: "+(result.message||result.status);
 }
 function initializeVoice(){
@@ -96,8 +96,8 @@ function initializeVoice(){
  select.addEventListener("change",()=>v.setSettings({voice:select.value}));
  for(const x of [tempo,pitch])x.addEventListener("input",()=>{v.setSettings({rate:tempo.value,pitch:pitch.value});paint();});
  $("voiceSample").addEventListener("click",()=>playVoice("Moin Nils! Hier ist Willi. Ich bin startklar. Wat steht denn heut auf dem Zettel?"));
- $("voiceStop").addEventListener("click",()=>v.stopSpeech());
- $("voiceStatus").textContent=v.capabilities().speaking?"Kostenlose Stimme bereit – Hörprobe starten.":"Dieser Browser unterstützt keine Sprachausgabe.";
+ $("voiceStop").addEventListener("click",()=>{v.stopSpeech();window.RNPiperVoice?.stop();});
+ $("voiceStatus").textContent=window.RNPiperVoice?"Piper / Thorsten bereit zum Laden – Hörprobe starten.":"Browserstimme bereit – Hörprobe starten.";
 }
 async function sendText(text,fromMic=false){
  const q=String(text||"").trim();
