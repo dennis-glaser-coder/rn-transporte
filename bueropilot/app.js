@@ -91,7 +91,7 @@ function initializeVoice(){
  const select=$("williVoice"),tempo=$("williRate"),pitch=$("williPitch");
  const setting=v.getSettings();tempo.value=setting.rate;pitch.value=setting.pitch;
  const paint=()=>{$("williRateValue").textContent=Number(tempo.value).toFixed(2).replace(".",",");$("williPitchValue").textContent=Number(pitch.value).toFixed(2).replace(".",",");};
- function voices(){const saved=v.getSettings().voice;select.replaceChildren();const list=v.refreshVoices();if(!list.length){const o=document.createElement("option");o.textContent="Systemstimme (automatisch)";o.value="";select.append(o);}else for(const item of list){const o=document.createElement("option");o.textContent=item.label;o.value=item.id;select.append(o);}if(list.some(x=>x.id===saved))select.value=saved;}
+ function voices(){const saved=v.getSettings().voice;select.replaceChildren();const list=v.getVoices();if(!list.length){const o=document.createElement("option");o.textContent="Systemstimme (automatisch)";o.value="";select.append(o);}else for(const item of list){const o=document.createElement("option");o.textContent=item.label;o.value=item.id;select.append(o);}if(list.some(x=>x.id===saved))select.value=saved;}
  v.onVoicesChanged(voices);voices();paint();
  select.addEventListener("change",()=>v.setSettings({voice:select.value}));
  for(const x of [tempo,pitch])x.addEventListener("input",()=>{v.setSettings({rate:tempo.value,pitch:pitch.value});paint();});
