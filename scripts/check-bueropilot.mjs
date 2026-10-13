@@ -75,7 +75,7 @@ test("CSV separator detection handles comma-heavy fields", () => {
   const begin = app.indexOf("function parseDelimited(");
   const end = app.indexOf("async function csvFile(", begin);
   assert.ok(begin > 0 && end > begin);
-  const context = {};
+  const context = {window:{}};
   runInNewContext(app.slice(begin, end) + ";this.csvTest={parseDelimited,delimiter};", context);
   const {parseDelimited,delimiter} = context.csvTest;
   const cases = [
