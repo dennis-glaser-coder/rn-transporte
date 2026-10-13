@@ -80,47 +80,52 @@ function bubble(text,me=false){
  $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
 }
 async function playVoice(text){
- if(!session || !text)return;
- try{
-   if(lastAudio){lastAudio.pause();lastAudio=null;}
-   const r=await functionCall("rn-willi-voice",{text:text.slice(0,500)});
-   if(typeof r.audioBase64!=="string"||!r.audioBase64||r.audioBase64.length>6500000)return;
-   const audio=new Audio("data:audio/mpeg;base64,"+r.audioBase64);lastAudio=audio;
-   await audio.play();
-   return new Promise(resolve=>{audio.onended=resolve;audio.onerror=resolve;});
- }catch(e){$("voiceStatus").textContent="Audio nicht verfügbar: "+e.message;}
+ const v=window.RNWilliVoice;
+ if(!v){$("voiceStatus").textContent="Die kostenlose Stimme konnte nicht geladen werden.";return;}
+ const result=await v.speak(text);
+ if(result.status==="unsupported"||result.status==="error")$("voiceStatus").textContent="Sprachausgabe nicht verfügbar: "+(result.message||result.status);
 }
-async function sendText(text){
+function initializeVoice(){
+ const v=window.RNWilliVoice;
+ if(!v)return;
+ const select=$("williVoice"),tempo=$("williRate"),pitch=$("williPitch");
+ const setting=v.getSettings();tempo.value=setting.rate;pitch.value=setting.pitch;
+ const paint=()=>{$("williRateValue").textContent=Number(tempo.value).toFixed(2).replace(".",",");$("williPitchValue").textContent=Number(pitch.value).toFixed(2).replace(".",",");};
+ function voices(){const saved=v.getSettings().voice;select.replaceChildren();const list=v.refreshVoices();if(!list.length){const o=document.createElement("option");o.textContent="Systemstimme (automatisch)";o.value="";select.append(o);}else for(const item of list){const o=document.createElement("option");o.textContent=item.label;o.value=item.id;select.append(o);}if(list.some(x=>x.id===saved))select.value=saved;}
+ v.onVoicesChanged(voices);voices();paint();
+ select.addEventListener("change",()=>v.setSettings({voice:select.value}));
+ for(const x of [tempo,pitch])x.addEventListener("input",()=>{v.setSettings({rate:tempo.value,pitch:pitch.value});paint();});
+ $("voiceSample").addEventListener("click",()=>playVoice("Moin Nils! Hier ist Willi. Ich bin startklar. Wat steht denn heut auf dem Zettel?"));
+ $("voiceStop").addEventListener("click",()=>v.stopSpeech());
+ $("voiceStatus").textContent=v.capabilities().speaking?"Kostenlose Stimme bereit – Hörprobe starten.":"Dieser Browser unterstützt keine Sprachausgabe.";
+}
+async function sendText(text,fromMic=false){
  const q=String(text||"").trim();
- if(!q||busy)return;
+ if(!q||busy)return "";
  busy=true;$("sendButton").disabled=true;bubble(q,true);
  try{
    const r=await functionCall("rn-willi-chat",{text:q,history:lastSpeech?[]:[]});
    const reply=typeof r.reply==="string"?r.reply:"Willi hat gerade keine Antwort geliefert.";
    bubble(reply);lastSpeech=reply;
-   if(listening){await playVoice(reply);}
- }catch(e){bubble("Das klappt noch nicht: "+e.message);}
- finally{busy=false;$("sendButton").disabled=false;if(listening)resumeMic();}
+   if(!fromMic){await playVoice(reply);}return reply;
+ }catch(e){const errorText="Das klappt noch nicht: "+e.message;bubble(errorText);if(!fromMic)await playVoice(errorText);return errorText;}
+ finally{busy=false;$("sendButton").disabled=false;}
 }
 function endMic(){
- listening=false;recording=false;
- try{speech?.abort();}catch(_){}
+ listening=false;
+ window.RNWilliVoice?.stopConversation();
  $("micToggle").textContent="🎙 Gespräch starten";
- $("voiceStatus").textContent="Gespräch angehalten.";
-}
-function resumeMic(){
- if(!listening||recording||busy||!speech)return;
- try{recording=true;speech.start();$("voiceStatus").textContent="Willi hört zu …";}catch(e){recording=false;$("voiceStatus").textContent="Mikrofon kann nicht starten: "+e.message;}
+ $("voiceStatus").textContent="Gespräch beendet.";
 }
 function startMic(){
- const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!Speech){$("voiceStatus").textContent="Dieser Browser unterstützt keine Spracherkennung. Nutze die Texteingabe.";return;}
- if(!window.isSecureContext){$("voiceStatus").textContent="Mikrofon benötigt eine sichere HTTPS-Seite.";return;}
- speech=new Speech();speech.lang="de-DE";speech.interimResults=false;speech.continuous=false;
- speech.onresult=e=>{const t=Array.from(e.results).map(x=>x[0]?.transcript||"").join(" ").trim();if(t){recording=false;sendText(t);}};
- speech.onend=()=>{recording=false;if(listening&&!busy)resumeMic();};
- speech.onerror=e=>{recording=false;if(["not-allowed","service-not-allowed","audio-capture"].includes(e.error)){endMic();$("voiceStatus").textContent="Mikrofon gesperrt. Bitte Browserberechtigung prüfen. Du kannst weiterhin tippen.";return;}if(e.error==="no-speech"){$("voiceStatus").textContent="Ich höre gerade nichts …";return;}$("voiceStatus").textContent="Spracherkennung: "+e.error;};
- listening=true;$("micToggle").textContent="■ Gespräch beenden";resumeMic();
+ const v=window.RNWilliVoice;
+ if(!v){$("voiceStatus").textContent="Sprachsteuerung konnte nicht geladen werden.";return;}
+ const state=v.startConversation(async text=>{
+  if(!session)return "Du musst dich erst anmelden, damit ich mit den Aufträgen arbeiten kann.";
+  return await sendText(text,true);
+ },status=>{$("voiceStatus").textContent=status;});
+ if(state.ok){listening=true;$("micToggle").textContent="■ Gespräch beenden";}
+ else $("voiceStatus").textContent=state.message;
 }
 async function init(){
  if(initComplete)return;initComplete=true;
@@ -133,6 +138,7 @@ async function init(){
  $("refreshOverview").addEventListener("click",loadJobs);$("refreshJobs").addEventListener("click",loadJobs);$("openWilli").addEventListener("click",()=>tab("willi"));
  $("chatForm").addEventListener("submit",e=>{e.preventDefault();const x=$("chatInput");const t=x.value;x.value="";sendText(t);});
  $("micToggle").addEventListener("click",()=>listening?endMic():startMic());
+ initializeVoice();
  if(!configured){showAuth();setup("Supabase noch nicht verbunden","Die GitHub-Pages-App ist vorbereitet. Sobald das Supabase-Projekt eingerichtet ist, wird hier der sichere Mitarbeiterzugang freigeschaltet. Trage niemals geheime API-Schlüssel in config.js ein.");setStatus("Supabase-Einrichtung fehlt");return;}
  if(!supabase){showAuth();setup("Supabase-Bibliothek nicht geladen","Prüfe die Internetverbindung oder den Script-Blocker.");setStatus("Verbindung nicht verfügbar");return;}
  supabase.auth.onAuthStateChange((e)=>{if(e==="SIGNED_OUT"){session=null;showAuth();}else if(e==="SIGNED_IN"||e==="TOKEN_REFRESHED"){queueMicrotask(()=>refreshSession().catch(console.warn));}});
