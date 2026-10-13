@@ -33,7 +33,7 @@ async function getData(table,columns="*"){
 async function refresh(){
  try{
   if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabasePublishableKey)throw Error("Geschützte Datenbank nicht geladen");
-  if(!db)db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});
+  if(!db)db=window.RNBuroPilotSupabase||window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});
   const auth=await db.auth.getSession();if(auth.error)throw auth.error;
   session=auth.data?.session||null;
   if(!session){staff=null;write=false;context("Du siehst die fertige Oberfläche. Für echte Speicherung ist eine gültige Mitarbeitersitzung erforderlich.");return}
