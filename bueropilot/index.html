@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f8fa">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>RN BüroPilot – Betriebszentrale</title>
+<link rel="icon" href="../assets/favicon-rn.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./app.css?v=6">
+<script defer src="./config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="./voice.js"></script>
+<script defer src="./app.js?v=6"></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="./" aria-label="RN BüroPilot Startseite"><span class="brandmark">RN</span><span class="brandname"><b>BüroPilot</b><small>RN TORWESTEN</small></span></a>
+    <div class="side-label">ARBEITSPLATZ</div>
+    <nav class="side-nav" aria-label="Hauptnavigation">
+      <button class="nav-item active" data-view="dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+      <button class="nav-item" data-view="calendar"><span class="nav-icon">▤</span>Disposition & Kalender</button>
+      <button class="nav-item" data-view="offers"><span class="nav-icon">▤</span>Angebote</button>
+      <button class="nav-item" data-view="jobs"><span class="nav-icon">☷</span>Aufträge</button>
+      <button class="nav-item" data-view="customers"><span class="nav-icon">♙</span>Kunden & Baustellen</button>
+    </nav>
+    <div class="side-label">VERWALTUNG</div>
+    <nav class="side-nav" aria-label="Verwaltung">
+      <button class="nav-item" data-view="toll"><span class="nav-icon">⇧</span>Maut-CSV</button>
+      <button class="nav-item" data-view="timesheets"><span class="nav-icon">▧</span>Stundenzettel</button>
+      <button class="nav-item" data-view="invoices"><span class="nav-icon">▣</span>Rechnungen</button>
+      <button class="nav-item" data-view="team"><span class="nav-icon">♧</span>Mitarbeiter</button>
+    </nav>
+    <div class="sidebar-bottom"><button class="nav-item" data-view="willi"><span class="nav-icon">✦</span>Willi · Assistent</button><div class="sidebar-caption"><span class="pulse"></span><span id="sidebarAccess">Designvorschau · keine Echtdaten</span></div><a class="home-link" href="../">← Zur RN-Homepage</a></div>
+  </aside>
+
+  <div class="workarea">
+    <header class="topbar">
+      <button class="icon-btn mobile-menu" id="menuToggle" aria-label="Menü öffnen" aria-expanded="false">☰</button>
+      <div class="top-context"><span class="breadcrumb">BETRIEBSZENTRALE</span><span class="slash">/</span><span id="locationName">Dashboard</span></div>
+      <div class="top-actions"><span class="environment" id="modeLabel">VORSCHAU</span><span class="auth-state" id="connectionLabel">Nicht angemeldet</span><button class="button button-outline" id="authButton">Anmelden</button></div>
+    </header>
+
+    <main class="main">
+      <div class="notice" id="previewNotice" role="status"><span class="notice-symbol">i</span><span><strong>Designvorschau:</strong> Du kannst alle Bereiche ansehen und Maut-CSV-Dateien lokal prüfen. Echte Kunden- und Auftragsdaten sind erst nach Anmeldung sichtbar. Änderungen und Importe werden noch nicht gespeichert.</span><button class="notice-dismiss" id="dismissNotice" aria-label="Hinweis ausblenden">×</button></div>
+
+      <section class="view active" id="dashboardView" data-title="Dashboard">
+        <div class="page-heading"><div><div class="kicker">GUTEN TAG</div><h1>Alles Wichtige. Auf einen Blick.</h1><p>Disposition, offene Vorgänge und Abrechnung – ohne Umwege.</p></div><button class="button button-primary" data-go="offers">＋ Neuer Vorgang</button></div>
+        <div class="summary-grid">
+          <div class="summary-card"><div class="summary-top"><span>Heute eingeplant</span><span class="summary-icon">▤</span></div><strong id="todayCount">—</strong><small>Aus der Disposition</small></div>
+          <div class="summary-card"><div class="summary-top"><span>Offene Anfragen</span><span class="summary-icon">◷</span></div><strong id="openCount">—</strong><small>Noch zu bearbeiten</small></div>
+          <div class="summary-card"><div class="summary-top"><span>Zur Abrechnung</span><span class="summary-icon">▣</span></div><strong id="billingCount">—</strong><small>Abgeschlossene Aufträge</small></div>
+        </div>
+        <div class="content-grid">
+          <section class="surface wide"><div class="section-head"><div><h2>Heutige Einsätze</h2><p>Die nächsten Termine aus der Disposition</p></div><button class="text-action" data-go="calendar">Kalender öffnen ↗</button></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Uhrzeit</th><th>Kunde / Baustelle</th><th>Pumpe / Fahrzeug</th><th>Status</th></tr></thead><tbody id="todayRows"><tr><td colspan="4" class="empty-cell">Nach Anmeldung erscheinen hier die echten Einsätze.</td></tr></tbody></table></div></section>
+          <section class="surface task-surface"><div class="section-head"><div><h2>Handlungsbedarf</h2><p>Was als Nächstes erledigt werden muss</p></div></div><div class="quiet-empty"><span class="soft-icon">✓</span><strong>Keine Vorgänge geladen</strong><p>Anfragen, fehlende Unterlagen und offene Abrechnungen werden hier erscheinen.</p></div><div class="task-foot">Keine Beispieldaten als echte Zahlen dargestellt.</div></section>
+        </div>
+        <section class="surface shortcuts"><div class="section-head"><div><h2>Schnellzugriff</h2><p>Die wichtigsten Tätigkeiten mit einem Klick</p></div></div><div class="shortcut-grid"><button data-go="toll"><span class="shortcut-icon">⇧</span><b>Maut-CSV prüfen</b><small>Wochen-Datei auswählen und kontrollieren</small><span class="arrow">↗</span></button><button data-go="offers"><span class="shortcut-icon">＋</span><b>Angebot vorbereiten</b><small>Vom Angebot zum Auftrag</small><span class="arrow">↗</span></button><button data-go="willi"><span class="shortcut-icon">✦</span><b>Willi fragen</b><small>Geschützter Text- und Sprachassistent</small><span class="arrow">↗</span></button></div></section>
+      </section>
+
+      <section class="view" id="calendarView" data-title="Disposition & Kalender">
+        <div class="page-heading"><div><div class="kicker">EINSATZPLANUNG</div><h1>Disposition & Kalender</h1><p>Pumpen, Baustellen und Termine in einer klaren Übersicht.</p></div><button class="button button-primary" data-go="offers">＋ Neue Anfrage</button></div>
+        <div class="surface"><div class="section-head"><div><h2>Wochenübersicht</h2><p id="weekLabel">Aktuelle Kalenderwoche</p></div><div class="inline-actions"><button class="mini-button" id="prevWeek" aria-label="Vorherige Woche">‹</button><button class="mini-button" id="currentWeek">Heute</button><button class="mini-button" id="nextWeek" aria-label="Nächste Woche">›</button></div></div><div class="week-grid" id="weekGrid"></div><div class="subtle-note">Termine werden aus freigegebenen Aufträgen angezeigt. Überschneidungsprüfung und Buchungen sind noch nicht zur Nutzung freigeschaltet.</div></div>
+      </section>
+
+      <section class="view" id="offersView" data-title="Angebote">
+        <div class="page-heading"><div><div class="kicker">VERTRIEB & PLANUNG</div><h1>Angebote</h1><p>Ein Angebot erstellen, prüfen und später in einen Auftrag umwandeln.</p></div></div>
+        <div class="surface"><div class="section-head"><div><h2>Neues Angebot</h2><p>Formularvorschau – Speichern und Versenden werden später aktiviert.</p></div><span class="tag tag-neutral">In Vorbereitung</span></div>
+        <div class="form-grid"><label>Kunde<input placeholder="Kundenname" disabled></label><label>Baustelle<input placeholder="Adresse / Ort" disabled></label><label>Einsatzdatum<input type="date" disabled></label><label>Startzeit<input type="time" disabled></label><label>Pumpe / Leistung<select disabled><option>Maschine auswählen</option><option>24er Pumpe</option><option>36er Pumpe</option><option>42er Pumpe</option></select></label><label>Voraussichtliche Dauer<input placeholder="z. B. 4 Stunden" disabled></label></div><div class="subtle-note">Eine verbindliche Angebots- und Auftragsanlage braucht serverseitige Speicherung, Berechtigungen und eine Bestätigung vor dem Buchen. Noch keine Preisberechnung eingerichtet.</div></div>
+      </section>
+
+      <section class="view" id="jobsView" data-title="Aufträge">
+        <div class="page-heading"><div><div class="kicker">AUFTRAGSVERWALTUNG</div><h1>Aufträge</h1><p>Von der Annahme über den Einsatz bis zur Abrechnung.</p></div></div>
+        <div class="surface"><div class="section-head"><div><h2>Auftragsübersicht</h2><p>Nur freigegebene Betriebsdaten</p></div><button class="button button-outline" id="refreshJobs">↻ Aktualisieren</button></div><div class="lifecycle"><span>Angebot</span><span>Angenommen</span><span>In Ausführung</span><span>Abgeschlossen</span><span>Abgerechnet</span></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Datum / Zeit</th><th>Kunde</th><th>Baustelle</th><th>Maschine</th><th>Status</th></tr></thead><tbody id="allJobsRows"><tr><td class="empty-cell" colspan="5">Nach Anmeldung werden die Aufträge geladen.</td></tr></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="customersView" data-title="Kunden & Baustellen"><div class="page-heading"><div><div class="kicker">STAMMDATEN</div><h1>Kunden & Baustellen</h1><p>Alle Ansprechpartner, Standorte und Aufträge an einem Ort.</p></div></div><div class="surface"><div class="module-empty"><span class="module-symbol">♙</span><h2>Kundenkartei</h2><p>Kontakte, Adressen und Baustellen werden hier zentral geführt. Die geschützte Datenspeicherung ist noch nicht freigegeben.</p><span class="tag tag-neutral">In Vorbereitung</span></div></div></section>
+
+      <section class="view" id="tollView" data-title="Maut-CSV"><div class="page-heading"><div><div class="kicker">WOCHENABLAUF</div><h1>Maut-CSV hochladen</h1><p>Die Wochen-Datei vor dem Import prüfen und Fehler sofort erkennen.</p></div></div>
+        <div class="surface"><div class="section-head"><div><h2>CSV-Datei auswählen</h2><p>Die Datei wird zunächst nur auf deinem Gerät eingelesen.</p></div><span class="tag tag-neutral">Prüfmodus</span></div>
+          <div class="upload-controls"><label>Kalenderwoche<input id="tollWeek" type="week"></label><label for="csvFile" class="file-drop"><span class="upload-icon">⇧</span><strong>CSV-Datei auswählen</strong><small>Datei hier antippen · .csv oder .txt · bis 8 MB</small><input id="csvFile" type="file" accept=".csv,.txt,text/csv,text/plain"></label></div>
+          <div id="csvStatus" class="inline-feedback" role="status" aria-live="polite">Noch keine Datei ausgewählt.</div>
+          <div id="csvPreview" hidden><div class="csv-stats"><div><small>Datensätze</small><b id="csvRowsCount">–</b></div><div><small>Spalten</small><b id="csvColumnsCount">–</b></div><div><small>Trennzeichen</small><b id="csvDelimiter">–</b></div></div><div class="table-scroll"><table class="data-table" id="csvTable"></table></div><div class="subtle-note">Vorschau maximal 20 Zeilen. Es wird noch nichts in Supabase gespeichert oder an das Mautprogramm übertragen. Für einen verbindlichen Import benötigen wir das tatsächliche Format einer Beispiel-CSV.</div></div>
+        </div></section>
+
+      <section class="view" id="timesheetsView" data-title="Stundenzettel"><div class="page-heading"><div><div class="kicker">NACHWEISE</div><h1>Stundenzettel</h1><p>Stundennachweise per Foto erfassen und später prüfen.</p></div></div><div class="surface"><div class="module-empty"><span class="module-symbol">▧</span><h2>Fotoerkennung vorbereiten</h2><p>Die Texterkennung und sichere Zuordnung zu Fahrern und Aufträgen müssen noch implementiert und getestet werden. Keine automatischen Buchungen aus Fotos ohne Kontrolle.</p><span class="tag tag-neutral">In Vorbereitung</span></div></div></section>
+      <section class="view" id="invoicesView" data-title="Rechnungen"><div class="page-heading"><div><div class="kicker">FINANZEN</div><h1>Rechnungen</h1><p>Abgeschlossene Einsätze für die Abrechnung vorbereiten.</p></div></div><div class="surface"><div class="module-empty"><span class="module-symbol">▣</span><h2>Abrechnung</h2><p>Die Rechnungserstellung wird mit unveränderbarer Historie, fortlaufenden Nummern und geeigneter Archivierung umgesetzt. Eine GoBD-Konformität kann erst nach rechtlicher und technischer Prüfung zugesagt werden.</p><span class="tag tag-neutral">In Vorbereitung</span></div></div></section>
+      <section class="view" id="teamView" data-title="Mitarbeiter"><div class="page-heading"><div><div class="kicker">ZUGRIFF</div><h1>Mitarbeiter & Rechte</h1><p>Passende Ansichten für Fahrer, Disposition und Büro.</p></div></div><div class="surface"><div class="role-grid"><div class="role-card"><b>Fahrer</b><p>Eigene Einsätze und Stundenzettel</p></div><div class="role-card"><b>Disposition</b><p>Planung und Aufträge</p></div><div class="role-card"><b>Büro</b><p>Kunden und Abrechnung</p></div></div><div class="subtle-note">Rollen werden serverseitig geprüft. Die vollständige Rollenverwaltung ist noch in Entwicklung.</div></div></section>
+
+      <section class="view" id="williView" data-title="Willi · Assistent"><div class="page-heading"><div><div class="kicker">ASSISTENZ</div><h1>Willi</h1><p>Der digitale Kollege für Fragen und die Vorbereitung von Vorgängen.</p></div></div>
+        <div class="chat-grid"><div class="surface chat-shell"><div class="chat-head"><span class="assistant-mark">✦</span><div><b>Willi</b><small id="chatConnection">Anmeldung erforderlich · keine Buchungen</small></div></div><div class="chat-history" id="chatMessages" role="log" aria-live="polite"><div class="bubble bot">Moin! Ich helfe dir gern weiter. Für den geschützten KI-Chat melde dich bitte mit deinem RN-Mitarbeiterkonto an.</div></div><form class="chat-compose" id="chatForm"><input id="chatInput" placeholder="Nachricht an Willi schreiben …" maxlength="1200"><button class="button button-primary" id="sendButton" type="submit">Senden ↗</button></form></div>
+        <div class="surface voice-options"><div class="section-head"><div><h2>Sprachbedienung</h2><p>Handy und Desktop</p></div></div><div class="voice-icon">♫</div><p>Die Browserstimme ist als verlässlicher Rückfall eingerichtet. Piper wird erst wieder angeboten, wenn es auf echten Geräten fehlerfrei getestet ist.</p><button class="button button-outline full" id="voiceSample">▶ Hörprobe</button><button class="button button-outline full" id="micToggle">🎙 Gespräch starten</button><button class="button button-outline full" id="voiceStop">■ Stimme stoppen</button><div class="inline-feedback" id="voiceStatus" role="status">Noch nicht gestartet.</div></div></div>
+      </section>
+
+      <footer>RN TORWESTEN TRANSPORTE <span>·</span> BüroPilot <span>·</span> Vorschau / geschützter Pilotbetrieb</footer>
+    </main>
+  </div>
+</div>
+
+<dialog id="authDialog" class="auth-dialog"><form method="dialog"><button class="dialog-close" aria-label="Schließen">×</button></form><span class="brandmark small">RN</span><h2>Beim BüroPilot anmelden</h2><p>Der Mitarbeiterzugang ist geschützt. Du bekommst einen einmaligen Link per E-Mail.</p><form id="loginForm"><label for="loginEmail">Deine RN-E-Mail-Adresse</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@firma.de"><button class="button button-primary full" id="loginButton" type="submit">Anmeldelink senden ↗</button></form><p class="inline-feedback" id="loginStatus" role="status"></p><small>Es werden keine neuen Konten automatisch angelegt.</small></dialog>
+<div id="mobileBackdrop" class="mobile-backdrop" hidden></div>
+</body>
+</html>
