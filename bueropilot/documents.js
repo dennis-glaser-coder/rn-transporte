@@ -143,6 +143,7 @@ function weekNow(){
  const start=new Date(Date.UTC(t.getUTCFullYear(),0,1));const n=Math.ceil((((t-start)/86400000)+1)/7);
  return t.getUTCFullYear()+"-W"+String(n).padStart(2,"0");
 }
+window.RNBuroPilotReloadDocuments=()=>load();
 function init(){
  if(!$("opsCustomerForm")||!$("tsPhoto"))return;
  mount();$("tollWeek").value=$("tollWeek").value||weekNow();
