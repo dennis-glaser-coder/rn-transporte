@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id),cfg=window.RN_PUBLIC_CONFIG||{};
 const esc=s=>String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 let db=null,session=null,staff=null,writer=false,sites=[],customers=[],orders=[],imports=[],timesheets=[],invoices=[],csv=null,working=false;
 function msg(id,v){if($(id))$(id).textContent=v}
-function client(){if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabasePublishableKey)throw Error("Datenbank nicht erreichbar");if(!db)db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});return db}
+function client(){if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabasePublishableKey)throw Error("Datenbank nicht erreichbar");if(!db)db=window.RNBuroPilotSupabase||window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});return db}
 async function load(){
  try{
   const c=client(),a=await c.auth.getSession();if(a.error)throw a.error;session=a.data?.session||null;
