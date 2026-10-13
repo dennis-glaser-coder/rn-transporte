@@ -38,3 +38,11 @@
 .ops-empty{text-align:center;color:#8b96a3;font-size:13px;padding:40px 14px}.ops-order{align-items:flex-start;flex-wrap:wrap}
 .ops-car-select{margin-top:9px}.ops-record .button{font-size:12px;padding:8px 11px}.ops-two-col>.surface{overflow:hidden}
 @media(max-width:980px){.ops-two-col{grid-template-columns:1fr}}@media(max-width:490px){.ops-input-row{grid-template-columns:1fr}.ops-record{padding:13px}.ops-record .button{width:100%}.ops-inline-actions{flex-direction:column;align-items:stretch}.ops-inline-actions>.button{width:100%}}
+
+/* Dokumente und sichere Importübersichten */
+.docs-append{margin-top:18px}.docs-action-row{display:flex;align-items:center;gap:17px;flex-wrap:wrap;margin:16px 0}.docs-import{border-top:1px solid #e6eaf0;margin-top:25px;padding-top:20px}.docs-import .section-head{margin-top:23px}
+.docs-job-label{display:grid;gap:5px;flex:1;min-width:180px;font-size:12px;font-weight:700}.docs-job-label select{padding:10px;border:1px solid #dfe5ea;border-radius:9px;max-width:100%}
+.docs-total{background:#f5f7fa;padding:12px;border-radius:9px;color:#303b49;font-size:14px;font-weight:800}
+.ops-form-row label{display:grid;gap:6px;font-size:12px;font-weight:750}.ops-form-row select{padding:12px 13px;background:#fff;border:1px solid #dfe4eb;border-radius:9px;width:100%;font-size:13px}
+.docs-action-row>.button{white-space:normal}
+@media(max-width:600px){.docs-action-row{flex-direction:column;align-items:stretch}.docs-action-row>.button{width:100%}}
