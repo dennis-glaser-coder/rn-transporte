@@ -82,7 +82,8 @@ function bubble(text,me=false){
 async function playVoice(text){
  const v=window.RNWilliVoice;
  if(!v){$("voiceStatus").textContent="Die kostenlose Stimme konnte nicht geladen werden.";return;}
- const result=window.RNPiperVoice ? await window.RNPiperVoice.speak(text,{rate:$("williRate").value,onStatus:msg=>$("voiceStatus").textContent=msg}) : await v.speak(text);
+ let result=window.RNPiperVoice ? await window.RNPiperVoice.speak(text,{rate:$("williRate").value,onStatus:msg=>$("voiceStatus").textContent=msg}) : await v.speak(text);
+ if(result.status==="error"||result.status==="unsupported"){ $("voiceStatus").textContent="Piper nicht verfügbar, Browserstimme wird verwendet."; result=await v.speak(text); }
  if(result.status==="unsupported"||result.status==="error")$("voiceStatus").textContent="Sprachausgabe nicht verfügbar: "+(result.message||result.status);
 }
 function initializeVoice(){
