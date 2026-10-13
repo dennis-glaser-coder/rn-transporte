@@ -10,14 +10,14 @@ if(week&&calendar){
   let mode="week";const now=new Date();$("extraDate").value=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
   const pumps=["24er Pumpe","36er Pumpe","42er Pumpe","Weitere"];
   function render(){
-    const cols=[...week.querySelectorAll(".week-day")].map(day=>({label:day.querySelector("strong")?.textContent||"",items:[...day.querySelectorAll(".week-item")].map(item=>item.textContent.trim())}));
-    let selected=cols.map((x,i)=>({...x,i}));if(mode==="day"){const date=new Date($("extraDate").value+"T12:00:00");const jsday=(date.getDay()+6)%7;selected=selected.filter(x=>x.i===jsday);if(!selected.length)selected=cols.slice(0,1).map((x,i)=>({...x,i}));}
+    const cols=[...week.querySelectorAll(".week-day")].map(day=>({label:day.querySelector("strong")?.textContent||"",date:day.dataset.date,items:[...day.querySelectorAll(".week-item")].map(item=>item.textContent.trim())}));
+    let selected=cols.map((x,i)=>({...x,i}));if(mode==="day"){const date=$("extraDate").value;selected=selected.filter(x=>x.date===date);}
     const h='<div class="resource-label resource-head">Maschine</div>'+selected.map(x=>'<div class="resource-head">'+escape(x.label)+'</div>').join("");
     const rows=pumps.map(p=>'<div class="resource-label"><span class="resource-dot"></span><strong>'+escape(p)+'</strong></div>'+selected.map(x=>{const matches=x.items.filter(y=>p==="Weitere"?!/(24er|36er|42er)/i.test(y):y.toLowerCase().includes(p.slice(0,2)));return '<div class="resource-cell">'+(matches.length?matches.map(y=>'<div class="resource-job">'+escape(y)+'</div>').join(""):'<span class="resource-empty">—</span>')+'</div>'}).join("")).join("");
     $("resourceCalendar").style.gridTemplateColumns="minmax(118px,165px) repeat("+selected.length+",minmax("+(mode==="day"?"240":"110")+"px,1fr))";
     $("resourceCalendar").innerHTML=h+rows;
   }
-  new MutationObserver(()=>render()).observe(week,{childList:true});$("extraWeek").onclick=()=>{mode="week";$("extraWeek").classList.add("selected");$("extraDay").classList.remove("selected");render()};$("extraDay").onclick=()=>{mode="day";$("extraDay").classList.add("selected");$("extraWeek").classList.remove("selected");render()};$("extraDate").onchange=()=>{$("extraDay").click()};render();
+  new MutationObserver(()=>render()).observe(week,{childList:true});$("extraWeek").onclick=()=>{mode="week";$("extraWeek").classList.add("selected");$("extraDay").classList.remove("selected");render()};$("extraDay").onclick=()=>{mode="day";$("extraDay").classList.add("selected");$("extraWeek").classList.remove("selected");render()};$("extraDate").onchange=()=>{window.RNBuroPilotGoToCalendarDate?.($("extraDate").value);$("extraDay").click()};render();
 }
 if(ts){
  const original=ts.querySelector(".surface");if(original)original.hidden=true;
