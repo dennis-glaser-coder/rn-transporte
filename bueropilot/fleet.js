@@ -1,19 +1,122 @@
-/* RN BueroPilot Fuhrpark: authenticated RLS CRUD, explicit read-only preview. */
+/* RN BueroPilot: simple fleet list and safe trailer connections. */
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
-const seed=[
- ["PB RN3240","Betonmischer 4 Achser"],["PB RN4241","Betonmischer 4 Achser"],["PB RN3242","Betonmischer 4 Achser"],
- ["PB RN784","Sattelzugmaschine"],["PB RN2646","Sattelzugmaschine"],["PB RN1833","Betonpumpe M24"],["PB RN2636","Betonpumpe M36"]
-].map(([registration,kind])=>({registration,kind,note:"",active:true,preview:true}));
-let db=null,rows=seed,canWrite=false,live=false,editing=null,busy=false;
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const initial=[
+["PB RN3240","Betonmischer 4 Achser"],["PB RN4241","Betonmischer 4 Achser"],["PB RN3242","Betonmischer 4 Achser"],["PB RN784","Sattelzugmaschine"],["PB RN2646","Sattelzugmaschine"],["PB RN1833","Betonpumpe M24"],["PB RN2636","Betonpumpe M36"],["PB RN 2412","Kippauflieger"],["PB RN 2312","Mischauflieger"],["PB RN 847","Mischauflieger"]
+];
+const demo=initial.map(([registration,kind])=>({registration,kind,active:true,note:"",preview:true}));
+const isTrailer=v=>v.kind==="Kippauflieger"||v.kind==="Mischauflieger";
+let db=null,rows=demo,live=false,canWrite=false,org=null,editing=null,tractor=null,busy=false,loadPending=false;
+const safe=t=>String(t??"");
 function info(msg){$("fleetInfo").textContent=msg;$("fleetInfo").classList.toggle("live",live)}
-function counts(){const active=rows.filter(x=>x.active);$("fleetTotal").textContent=active.length;$("fleetMixers").textContent=active.filter(x=>x.kind==="Betonmischer 4 Achser").length;$("fleetTractors").textContent=active.filter(x=>x.kind==="Sattelzugmaschine").length;$("fleetPumps").textContent=active.filter(x=>x.kind.startsWith("Betonpumpe")).length}
-function draw(){counts();const query=$("fleetSearch").value.trim().toLocaleLowerCase("de"),kind=$("fleetFilter").value,showInactive=$("fleetInactive").checked;const visible=rows.filter(x=>(showInactive||x.active)&&(kind==="all"||(kind==="Betonpumpe"?x.kind.startsWith("Betonpumpe"):x.kind===kind))&&[x.registration,x.kind,x.note].join(" ").toLocaleLowerCase("de").includes(query));$("fleetEmpty").hidden=!!visible.length;
-$("fleetList").innerHTML=visible.map(x=>{const type=x.kind.startsWith("Betonpumpe")?"pump":x.kind==="Sattelzugmaschine"?"tractor":"mixer";const reg=esc(x.registration),kind=esc(x.kind),note=esc(x.note),enabled=x.active?"Aktiv":"Inaktiv";return `<article class="fleet-row ${x.active?"":"inactive"}"><div class="fleet-type-icon ${type}">${type==="pump"?"◉":type==="tractor"?"▰":"▥"}</div><div class="fleet-description"><b>${reg}</b><span>${kind}</span>${note?"<small>"+note+"</small>":""}</div><div class="fleet-row-right"><span class="fleet-state ${x.active?"":"off"}">${enabled}</span><button type="button" class="fleet-edit" data-reg="${reg}" ${canWrite?"":"disabled"}>Bearbeiten</button></div></article>`}).join("");document.querySelectorAll(".fleet-edit").forEach(b=>b.addEventListener("click",()=>{const x=rows.find(y=>y.registration===b.dataset.reg);if(x)edit(x)}))}
-async function access(){try{const c=window.RN_PUBLIC_CONFIG||{};if(!window.supabase?.createClient||!c.supabaseUrl||!c.supabasePublishableKey)throw Error("Login nicht geladen");db=window.supabase.createClient(c.supabaseUrl,c.supabasePublishableKey,{auth:{persistSession:true,detectSessionInUrl:true,autoRefreshToken:true}});const {data:{session},error:sessionError}=await db.auth.getSession();if(sessionError)throw sessionError;if(!session){live=false;canWrite=false;rows=seed;info("Vorschau der 7 eingespielten Fahrzeuge. Für Änderungen bitte anmelden.");draw();return}const {data:staff,error:staffError}=await db.from("rn_staff").select("org_id,role,enabled").eq("user_id",session.user.id).maybeSingle();if(staffError||!staff?.enabled){live=false;canWrite=false;rows=seed;info("Mitarbeiterkonto noch nicht freigegeben. Fahrzeugdatenbank nur als Vorschau sichtbar.");draw();return}const r=await db.from("rn_vehicles").select("id,org_id,registration,kind,note,active,created_at").eq("org_id",staff.org_id).order("registration");if(r.error)throw r.error;rows=r.data;live=true;canWrite=["admin","dispatcher"].includes(staff.role);info(canWrite?"Live-Daten aus der RN-Fahrzeugverwaltung. Änderungen werden sicher gespeichert.":"Live-Daten · Mitarbeiterzugriff nur lesend.");draw()}catch(e){rows=seed;live=false;canWrite=false;info("Datenbank zurzeit nicht erreichbar. Nur Vorschau: "+(e.message||"Unbekannter Fehler"));draw()}}
-function edit(x){if(!canWrite||!live){info("Zum Bearbeiten bitte mit berechtigtem Mitarbeiterkonto anmelden.");return}editing=x||null;$("fleetDialogTitle").textContent=x?"Fahrzeug bearbeiten":"Fahrzeug hinzufügen";$("fleetRegistration").value=x?.registration||"";$("fleetKind").value=x?.kind||"Betonmischer 4 Achser";$("fleetNote").value=x?.note||"";$("fleetActive").checked=x?.active??true;$("fleetFormError").textContent="";$("fleetDialog").showModal()}
-async function save(e){e.preventDefault();if(!canWrite||!live||busy)return;const registration=$("fleetRegistration").value.trim().toUpperCase().replace(/\s+/g," "),kind=$("fleetKind").value,note=$("fleetNote").value.trim(),active=$("fleetActive").checked;if(!/^[A-ZÄÖÜ0-9 -]{4,30}$/.test(registration)){$("fleetFormError").textContent="Bitte ein gültiges Kennzeichen eingeben.";return}const allowed=["Betonmischer 4 Achser","Sattelzugmaschine","Betonpumpe M24","Betonpumpe M36","Sonstiges"];if(!allowed.includes(kind))return;busy=true;$("fleetSave").disabled=true;try{const changes={registration,kind,note,active};let res;if(editing){res=await db.from("rn_vehicles").update(changes).eq("id",editing.id).select("id");}else{const {data:{session}}=await db.auth.getSession();const {data:staff,error:staffErr}=await db.from("rn_staff").select("org_id,enabled,role").eq("user_id",session.user.id).single();if(staffErr||!staff.enabled||!["admin","dispatcher"].includes(staff.role))throw Error("Keine Schreibberechtigung.");res=await db.from("rn_vehicles").insert({...changes,org_id:staff.org_id}).select("id")}if(res.error)throw res.error;if(!res.data?.length)throw Error("Änderung nicht gespeichert – keine Freigabe.");$("fleetDialog").close();await access();info("Fahrzeug erfolgreich gespeichert. "+rows.length+" Fahrzeuge im Bestand.")}catch(e){$("fleetFormError").textContent=e.message||"Speichern fehlgeschlagen."}finally{busy=false;$("fleetSave").disabled=false}}
-function init(){$("fleetAdd").addEventListener("click",()=>edit(null));$("fleetRefresh").addEventListener("click",access);$("fleetSearch").addEventListener("input",draw);$("fleetFilter").addEventListener("change",draw);$("fleetInactive").addEventListener("change",draw);$("fleetCancel").addEventListener("click",()=>$("fleetDialog").close());$("fleetCancelX").addEventListener("click",()=>$("fleetDialog").close());$("fleetForm").addEventListener("submit",save);window.addEventListener("hashchange",()=>{if(location.hash==="#vehicles")access()});document.querySelectorAll('[data-view="vehicles"]').forEach(b=>b.addEventListener("click",access));$("fleetAdd").title="Fahrzeug in der geschützten Datenbank anlegen";draw();access()}
+function currentTrailer(v){return rows.find(x=>x.connected_tractor_id&&x.connected_tractor_id===v.id)}
+function connectedTractor(v){return rows.find(x=>x.id===v.connected_tractor_id)}
+function sorted(xs){return [...xs].sort((a,b)=>{const i=initial.findIndex(x=>x[0]===a.registration),j=initial.findIndex(x=>x[0]===b.registration);if(i>=0||j>=0)return (i<0?100+i:i)-(j<0?100+j:j);return a.registration.localeCompare(b.registration,"de")})}
+function tag(tag,cls,value){const x=document.createElement(tag);if(cls)x.className=cls;if(value!=null)x.textContent=safe(value);return x}
+function draw(){
+ const active=rows.filter(x=>x.active&&!isTrailer(x));
+ $("fleetTotal").textContent=String(active.length);
+ $("fleetMixers").textContent=String(active.filter(x=>x.kind==="Betonmischer 4 Achser").length);
+ $("fleetTractors").textContent=String(active.filter(x=>x.kind==="Sattelzugmaschine").length);
+ $("fleetPumps").textContent=String(active.filter(x=>x.kind.startsWith("Betonpumpe")).length);
+ document.querySelectorAll(".fleet-nav-count").forEach(x=>x.textContent=String(rows.length));
+ const query=$("fleetSearch").value.trim().toLocaleLowerCase("de"),kind=$("fleetFilter").value,includeInactive=$("fleetInactive").checked;
+ const filtered=sorted(rows.filter(v=>(includeInactive||v.active)&&(kind==="all"||kind==="Auflieger"&&isTrailer(v)||kind==="Betonpumpe"&&v.kind.startsWith("Betonpumpe")||kind===v.kind)&&[v.registration,v.kind,v.note,live?currentTrailer(v)?.registration:"",live?connectedTractor(v)?.registration:""].join(" ").toLocaleLowerCase("de").includes(query)));
+ $("fleetEmpty").hidden=filtered.length>0;$("fleetList").replaceChildren();
+ for(const [label,group] of [["Fahrzeuge",filtered.filter(v=>!isTrailer(v))],["Auflieger",filtered.filter(isTrailer)]]){
+  if(!group.length)continue;const section=tag("section","fleet-group");
+  const header=tag("div","fleet-group-header");header.append(tag("strong","",label),tag("span","",String(group.length)));section.append(header);
+  for(const v of group){
+   const row=tag("article","fleet-row"+(v.active?"":" inactive")),ty=isTrailer(v)?"trailer":v.kind==="Sattelzugmaschine"?"tractor":v.kind.startsWith("Betonpumpe")?"pump":"mixer";
+   row.append(tag("div","fleet-type-icon "+ty,ty==="pump"?"◉":ty==="tractor"?"▰":ty==="trailer"?"▱":"▥"));
+   const desc=tag("div","fleet-description");desc.append(tag("b","",v.registration),tag("span","",v.kind));
+   if(v.note)desc.append(tag("small","",v.note));
+   if(live&&v.kind==="Sattelzugmaschine"){const attached=currentTrailer(v);desc.append(tag("small","fleet-attached",attached?"Auflieger: "+attached.registration:"Kein Auflieger verbunden"))}
+   if(live&&isTrailer(v)){const linked=connectedTractor(v);desc.append(tag("small","fleet-attached",linked?"Verbunden mit "+linked.registration:"Nicht verbunden"))}
+   row.append(desc);
+   const right=tag("div","fleet-row-right");right.append(tag("span","fleet-state "+(!v.active?"off":!live?"preview":""),live?(v.active?"Aktiv":v.unavailable_reason||"Inaktiv"):"Vorschau"));
+   if(v.kind==="Sattelzugmaschine"){const btn=tag("button","fleet-connect","Auflieger wählen");btn.type="button";btn.disabled=!canWrite||!v.active;btn.title=!canWrite?"Nur mit freigegebenem Mitarbeiterzugang":!v.active?"Inaktive Zugmaschine":"Auflieger verbinden oder lösen";btn.onclick=()=>openTrailer(v);right.append(btn)}
+   const editBtn=tag("button","fleet-edit","Bearbeiten");editBtn.type="button";editBtn.disabled=!canWrite;editBtn.onclick=()=>openEdit(v);right.append(editBtn);row.append(right);section.append(row);
+  }
+  $("fleetList").append(section);
+ }
+}
+async function refresh(){
+ if(loadPending)return;loadPending=true;
+ try{
+  const cfg=window.RN_PUBLIC_CONFIG||{};
+  if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabasePublishableKey)throw Error("Verbindung noch nicht bereit");
+  if(!db)db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
+  const {data:auth,error:authErr}=await db.auth.getSession();if(authErr)throw authErr;
+  if(!auth?.session){live=false;canWrite=false;rows=demo;info("Vorschau der 10 erfassten Fahrzeuge und Auflieger. Für Verbindungen bitte anmelden.");return}
+  const {data:staff,error:staffErr}=await db.from("rn_staff").select("org_id,role,enabled").eq("user_id",auth.session.user.id).maybeSingle();
+  if(staffErr||!staff?.enabled){live=false;canWrite=false;rows=demo;info("Mitarbeiterzugang noch nicht freigegeben. Es werden nur Beispieldarstellungen gezeigt.");return}
+  const {data,error}=await db.from("rn_vehicles").select("id,org_id,registration,kind,note,active,unavailable_reason,connected_tractor_id").eq("org_id",staff.org_id).order("registration");
+  if(error)throw error;
+  rows=data;org=staff.org_id;live=true;canWrite=["admin","dispatcher"].includes(staff.role);
+  info(canWrite?"Fuhrpark aktuell · Auflieger können direkt bei der Sattelzugmaschine verbunden werden.":"Fuhrpark aktuell · du hast nur Leserechte.");
+ }catch(e){live=false;canWrite=false;rows=demo;info("Datenbank zurzeit nicht erreichbar. Nur Vorschau: "+(e.message||"Fehler"))}
+ finally{loadPending=false;draw()}
+}
+function checkWrite(){if(live&&canWrite)return true;info("Zum Bearbeiten bitte als freigegebener Mitarbeiter der Disposition anmelden.");return false}
+function openTrailer(v){
+ if(!checkWrite())return;
+ tractor=v;const select=$("fleetTrailerChoice");select.replaceChildren(new Option("Keinen Auflieger verbinden","none"));
+ const attached=currentTrailer(v);
+ for(const x of sorted(rows.filter(x=>isTrailer(x)&&x.active))){
+  const other=x.connected_tractor_id&&x.connected_tractor_id!==v.id;
+  const label=x.registration+" · "+x.kind+(other?" (bereits verbunden)":"");
+  const option=new Option(label,x.id);option.disabled=Boolean(other);select.append(option)
+ }
+ select.value=attached?.id||"none";$("fleetTrailerTractor").textContent="Zugmaschine: "+v.registration;
+ $("fleetTrailerError").textContent="";$("fleetTrailerDialog").showModal();
+}
+async function saveTrailer(event){
+ event.preventDefault();if(!checkWrite()||!tractor||busy)return;busy=true;$("fleetTrailerSave").disabled=true;
+ try{
+  const id=$("fleetTrailerChoice").value;
+  const result=await db.rpc("rn_connect_trailer",{p_tractor_id:tractor.id,p_trailer_id:id==="none"?null:id});
+  if(result.error)throw result.error;
+  $("fleetTrailerDialog").close();await refresh();
+  info(id==="none"?"Aufliegerverbindung gelöst.":"Aufliegerverbindung erfolgreich gespeichert.");
+ }catch(e){$("fleetTrailerError").textContent=e.message||"Verbindung nicht gespeichert."}
+ finally{busy=false;$("fleetTrailerSave").disabled=false}
+}
+function openEdit(v){
+ if(!checkWrite())return;
+ editing=v||null;$("fleetDialogTitle").textContent=v?"Fahrzeug bearbeiten":"Fahrzeug hinzufügen";
+ $("fleetRegistration").value=v?.registration||"";$("fleetKind").value=v?.kind||"Betonmischer 4 Achser";
+ $("fleetNote").value=v?.note||"";$("fleetActive").value=v?.active===false?(v.unavailable_reason||"Sonstiges"):"active";
+ $("fleetFormError").textContent="";$("fleetDialog").showModal()
+}
+async function saveVehicle(event){
+ event.preventDefault();if(!checkWrite()||busy)return;
+ const registration=$("fleetRegistration").value.trim().toUpperCase().replace(/\s+/g," ");
+ const kind=$("fleetKind").value,reason=$("fleetActive").value,note=$("fleetNote").value.trim();
+ const valid=["Betonmischer 4 Achser","Sattelzugmaschine","Betonpumpe M24","Betonpumpe M36","Kippauflieger","Mischauflieger","Sonstiges"];
+ if(!/^[A-ZÄÖÜ0-9 -]{4,30}$/.test(registration)||!valid.includes(kind)){$("fleetFormError").textContent="Kennzeichen oder Fahrzeugtyp ungültig.";return}
+ if(editing?.connected_tractor_id&&kind!=="Mischauflieger"&&kind!=="Kippauflieger"){$("fleetFormError").textContent="Bitte den Auflieger zuerst von der Zugmaschine lösen.";return}
+ busy=true;$("fleetSave").disabled=true;
+ try{
+  const values={registration,kind,note,active:reason==="active",unavailable_reason:reason==="active"?null:reason};
+  let res;
+  if(editing)res=await db.from("rn_vehicles").update(values).eq("id",editing.id).eq("org_id",org).select("id");
+  else res=await db.from("rn_vehicles").insert({...values,org_id:org}).select("id");
+  if(res.error)throw res.error;if(!res.data?.length)throw Error("Änderung konnte nicht bestätigt werden");
+  $("fleetDialog").close();await refresh();info("Fahrzeug erfolgreich gespeichert.")
+ }catch(e){$("fleetFormError").textContent=e.message||"Fahrzeug konnte nicht gespeichert werden"}
+ finally{busy=false;$("fleetSave").disabled=false}
+}
+function init(){
+ $("fleetAdd").onclick=()=>openEdit(null);$("fleetRefresh").onclick=refresh;
+ $("fleetSearch").oninput=draw;$("fleetFilter").onchange=draw;$("fleetInactive").onchange=draw;
+ $("fleetCancel").onclick=$("fleetCancelX").onclick=()=>$("fleetDialog").close();
+ $("fleetForm").onsubmit=saveVehicle;
+ $("fleetTrailerCancel").onclick=$("fleetTrailerCloseX").onclick=()=>$("fleetTrailerDialog").close();
+ $("fleetTrailerForm").onsubmit=saveTrailer;
+ window.addEventListener("hashchange",()=>{if(location.hash==="#vehicles")refresh()});
+ document.querySelector('[data-view="vehicles"]')?.addEventListener("click",refresh);
+ draw();refresh()
+}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
