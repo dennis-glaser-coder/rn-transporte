@@ -104,8 +104,8 @@ async function sendText(text,fromMic=false){
  if(!q||busy)return "";
  busy=true;$("sendButton").disabled=true;bubble(q,true);
  try{
-   const workerUrl=String(cfg.cloudflareWorkerUrl||"").replace(/\\/$/,"");
-   if(!/^https:\/\/[a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.workers\\.dev$/i.test(workerUrl))throw Error("Willi-KI ist noch nicht verbunden. Der Cloudflare-Worker muss zuerst eingerichtet werden.");
+   const workerUrl=String(cfg.cloudflareWorkerUrl||"").replace(/\/$/,"");
+   if(!/^https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)*\.workers\.dev$/i.test(workerUrl))throw Error("Willi-KI ist noch nicht verbunden. Der Cloudflare-Worker muss zuerst eingerichtet werden.");
    if(!session?.access_token)throw Error("Bitte erneut anmelden.");
    const response=await fetch(workerUrl+"/chat",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify({text:q})});
    const r=await response.json().catch(()=>({error:"Unbekannte Serverantwort."}));
