@@ -50,6 +50,19 @@ test("timesheet CSV export validates meaningful fields", () => {
   assert.match(enhanced, /confirm\.checked/);
   assert.match(enhanced, /photo\.files/);
 });
+test("calendar selected date navigates to the correct week", () => {
+  const begin=app.indexOf("function goToCalendarDate("),end=app.indexOf("function parseDelimited(",begin);
+  assert.ok(begin>=0&&end>begin);
+  let rendered=0;
+  const ctx={window:{},weekOffset:0,renderWeek:()=>rendered++,
+    dateISO:d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
+  runInNewContext(app.slice(begin,end),ctx);
+  ctx.window.RNBuroPilotGoToCalendarDate("2026-10-13");
+  assert.equal(rendered,1,"valid day should navigate to calendar week");
+  ctx.window.RNBuroPilotGoToCalendarDate("2026-99-99");
+  assert.equal(rendered,1,"invalid day must not navigate");
+});
+
 test("CSV separator detection handles comma-heavy fields", () => {
   const begin = app.indexOf("function parseDelimited(");
   const end = app.indexOf("async function csvFile(", begin);
