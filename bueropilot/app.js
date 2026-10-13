@@ -1,0 +1,142 @@
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const cfg = window.RN_PUBLIC_CONFIG || {};
+const configured = Boolean(/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(cfg.supabaseUrl || "") && cfg.supabasePublishableKey && cfg.supabasePublishableKey.length > 20);
+const supabase = configured && window.supabase?.createClient
+ ? window.supabase.createClient(cfg.supabaseUrl.replace(/\/$/,""),cfg.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}}) : null;
+let session = null, staff = null, jobs = [], busy = false, speech = null, listening = false, recording = false;
+let lastAudio = null, lastSpeech = "", initComplete = false;
+function setStatus(msg,ready=false){$("connText").textContent=msg;$("connDot").className="status-dot "+(ready?"ready":"error");}
+function setup(title,msg){$("setupNotice").hidden=false;$("setupTitle").textContent=title;$("setupMessage").textContent=msg;}
+function hideSetup(){$("setupNotice").hidden=true;}
+function showAuth(){staff=null;$("authScreen").hidden=false;$("appScreen").hidden=true;$("logoutBtn").hidden=!session;}
+function showApp(){$("authScreen").hidden=true;$("appScreen").hidden=false;$("logoutBtn").hidden=false;hideSetup();}
+function message(text){$("loginStatus").textContent=text;}
+function escapeText(v){return typeof v==="string"?v:String(v??"");}
+async function functionCall(name,payload){
+  if(!supabase||!session)throw Error("Bitte zuerst anmelden.");
+  const {data,error}=await supabase.functions.invoke(name,{body:payload||{}});
+  if(error){
+    let details="";
+    try{details=(await error.context?.json())?.error||"";}catch(_){}
+    throw Error(details||"Serverfunktion '"+name+"' ist noch nicht erreichbar.");
+  }
+  if(data?.error)throw Error(data.error);
+  return data;
+}
+async function refreshSession(){
+ const {data,error}=await supabase.auth.getSession();
+ if(error)throw error;
+ session=data?.session||null;
+ if(!session){showAuth();setStatus("Nicht angemeldet");return;}
+ try{
+   const data=await functionCall("rn-auth-check",{});
+   if(!data?.allowed)throw Error("Du bist noch nicht als RN-Mitarbeiter freigegeben.");
+   staff=data;showApp();setStatus("Mitarbeiterzugang aktiv",true);await loadJobs();
+ }catch(e){
+   showAuth();setup("Noch kein Mitarbeiterzugang",e.message||"Keine Berechtigung.");setStatus("Zugang nicht freigegeben");
+ }
+}
+async function loadJobs(){
+ try{
+   const r=await functionCall("rn-jobs-list",{});
+   if(!Array.isArray(r.jobs))throw Error("Unerwartete Serverantwort.");
+   jobs=r.jobs;
+   renderJobs();
+ }catch(e){jobs=[];renderJobs();setup("Disposition nicht verfügbar",e.message);}
+}
+function renderJobs(){
+ $("metricAll").textContent=jobs.length;
+ const day=d=>d.toLocaleDateString("sv-SE");
+ const now=new Date(),tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);
+ $("metricToday").textContent=jobs.filter(x=>x.date===day(now)).length;
+ $("metricTomorrow").textContent=jobs.filter(x=>x.date===day(tomorrow)).length;
+ $("overviewJobs").replaceChildren();
+ $("jobsTbody").replaceChildren();
+ if(!jobs.length){$("overviewJobs").innerHTML='<div class="empty">Noch keine freigegebenen Einsätze vorhanden.</div>';$("jobsTbody").innerHTML='<tr><td colspan="5" class="empty">Keine Einsätze geladen.</td></tr>';return;}
+ const sorted=[...jobs].sort((a,b)=>String(a.date+" "+a.start_time).localeCompare(String(b.date+" "+b.start_time)));
+ for(const j of sorted.slice(0,6)){
+   const div=document.createElement("div");div.className="job-item";
+   const one=document.createElement("div"),head=document.createElement("b"),sub=document.createElement("div"),side=document.createElement("span");
+   head.textContent=escapeText(j.customer);sub.textContent=escapeText(j.site);sub.className="small-note";side.textContent=[j.date,String(j.start_time||"").slice(0,5),j.pump].filter(Boolean).join(" · ");
+   one.append(head,sub);div.append(one,side);$("overviewJobs").append(div);
+ }
+ for(const j of sorted){
+   const tr=document.createElement("tr");
+   for(const value of [[j.date,String(j.start_time||"").slice(0,5)].join(" · "),j.customer,j.site,j.pump,j.status]){
+     const td=document.createElement("td");td.textContent=escapeText(value);tr.append(td);
+   }
+   $("jobsTbody").append(tr);
+ }
+}
+function tab(id){
+ document.querySelectorAll(".tab").forEach(t=>{const active=t.dataset.tab===id;t.classList.toggle("active",active);t.setAttribute("aria-pressed",String(active));});
+ ["overview","jobs","willi"].forEach(n=>$(n+"Panel").hidden=n!==id);
+ if(id==="willi")$("chatInput").focus();
+}
+function bubble(text,me=false){
+ const el=document.createElement("div");el.className="bubble "+(me?"me-bubble":"willi-bubble");el.textContent=text;$("chatMessages").append(el);
+ $("chatMessages").scrollTop=$("chatMessages").scrollHeight;
+}
+async function playVoice(text){
+ if(!session || !text)return;
+ try{
+   if(lastAudio){lastAudio.pause();lastAudio=null;}
+   const r=await functionCall("rn-willi-voice",{text:text.slice(0,500)});
+   if(typeof r.audioBase64!=="string"||!r.audioBase64||r.audioBase64.length>6500000)return;
+   const audio=new Audio("data:audio/mpeg;base64,"+r.audioBase64);lastAudio=audio;
+   await audio.play();
+   return new Promise(resolve=>{audio.onended=resolve;audio.onerror=resolve;});
+ }catch(e){$("voiceStatus").textContent="Audio nicht verfügbar: "+e.message;}
+}
+async function sendText(text){
+ const q=String(text||"").trim();
+ if(!q||busy)return;
+ busy=true;$("sendButton").disabled=true;bubble(q,true);
+ try{
+   const r=await functionCall("rn-willi-chat",{text:q,history:lastSpeech?[]:[]});
+   const reply=typeof r.reply==="string"?r.reply:"Willi hat gerade keine Antwort geliefert.";
+   bubble(reply);lastSpeech=reply;
+   if(listening){await playVoice(reply);}
+ }catch(e){bubble("Das klappt noch nicht: "+e.message);}
+ finally{busy=false;$("sendButton").disabled=false;if(listening)resumeMic();}
+}
+function endMic(){
+ listening=false;recording=false;
+ try{speech?.abort();}catch(_){}
+ $("micToggle").textContent="🎙 Gespräch starten";
+ $("voiceStatus").textContent="Gespräch angehalten.";
+}
+function resumeMic(){
+ if(!listening||recording||busy||!speech)return;
+ try{recording=true;speech.start();$("voiceStatus").textContent="Willi hört zu …";}catch(e){recording=false;$("voiceStatus").textContent="Mikrofon kann nicht starten: "+e.message;}
+}
+function startMic(){
+ const Speech=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!Speech){$("voiceStatus").textContent="Dieser Browser unterstützt keine Spracherkennung. Nutze die Texteingabe.";return;}
+ if(!window.isSecureContext){$("voiceStatus").textContent="Mikrofon benötigt eine sichere HTTPS-Seite.";return;}
+ speech=new Speech();speech.lang="de-DE";speech.interimResults=false;speech.continuous=false;
+ speech.onresult=e=>{const t=Array.from(e.results).map(x=>x[0]?.transcript||"").join(" ").trim();if(t){recording=false;sendText(t);}};
+ speech.onend=()=>{recording=false;if(listening&&!busy)resumeMic();};
+ speech.onerror=e=>{recording=false;if(["not-allowed","service-not-allowed","audio-capture"].includes(e.error)){endMic();$("voiceStatus").textContent="Mikrofon gesperrt. Bitte Browserberechtigung prüfen. Du kannst weiterhin tippen.";return;}if(e.error==="no-speech"){$("voiceStatus").textContent="Ich höre gerade nichts …";return;}$("voiceStatus").textContent="Spracherkennung: "+e.error;};
+ listening=true;$("micToggle").textContent="■ Gespräch beenden";resumeMic();
+}
+async function init(){
+ if(initComplete)return;initComplete=true;
+ $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!supabase)return;const email=$("loginEmail").value.trim();$("loginButton").disabled=true;
+  try{const {error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;message("Prüfe deine E-Mails. Der Link führt dich zurück zu BüroPilot.");}
+  catch(e){message(e.message);}finally{$("loginButton").disabled=false;}
+ });
+ $("logoutBtn").addEventListener("click",async()=>{endMic();if(supabase)await supabase.auth.signOut();session=null;showAuth();setStatus("Abgemeldet");});
+ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>tab(t.dataset.tab)));
+ $("refreshOverview").addEventListener("click",loadJobs);$("refreshJobs").addEventListener("click",loadJobs);$("openWilli").addEventListener("click",()=>tab("willi"));
+ $("chatForm").addEventListener("submit",e=>{e.preventDefault();const x=$("chatInput");const t=x.value;x.value="";sendText(t);});
+ $("micToggle").addEventListener("click",()=>listening?endMic():startMic());
+ if(!configured){showAuth();setup("Supabase noch nicht verbunden","Die GitHub-Pages-App ist vorbereitet. Sobald das Supabase-Projekt eingerichtet ist, wird hier der sichere Mitarbeiterzugang freigeschaltet. Trage niemals geheime API-Schlüssel in config.js ein.");setStatus("Supabase-Einrichtung fehlt");return;}
+ if(!supabase){showAuth();setup("Supabase-Bibliothek nicht geladen","Prüfe die Internetverbindung oder den Script-Blocker.");setStatus("Verbindung nicht verfügbar");return;}
+ supabase.auth.onAuthStateChange((e)=>{if(e==="SIGNED_OUT"){session=null;showAuth();}else if(e==="SIGNED_IN"||e==="TOKEN_REFRESHED"){queueMicrotask(()=>refreshSession().catch(console.warn));}});
+ try{await refreshSession();}catch(e){showAuth();setup("Verbindungsfehler",e.message);setStatus("Verbindung fehlgeschlagen");}
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
