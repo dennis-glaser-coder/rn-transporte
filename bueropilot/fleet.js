@@ -76,7 +76,7 @@ async function refresh(){
  try{
   const cfg=window.RN_PUBLIC_CONFIG||{};
   if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabasePublishableKey)throw Error("Verbindung noch nicht bereit");
-  if(!db)db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
+  if(!db)db=window.RNBuroPilotSupabase||window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
   const {data:auth,error:authErr}=await db.auth.getSession();if(authErr)throw authErr;
   if(!auth?.session){live=false;canWrite=false;rows=previewRows();info("Vorschau · Auflieger lassen sich auswählen. Ohne Anmeldung gilt die Verbindung nur auf diesem Gerät.");return}
   const {data:staff,error:staffErr}=await db.from("rn_staff").select("org_id,role,enabled").eq("user_id",auth.session.user.id).maybeSingle();
