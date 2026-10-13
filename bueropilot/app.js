@@ -104,7 +104,12 @@ async function sendText(text,fromMic=false){
  if(!q||busy)return "";
  busy=true;$("sendButton").disabled=true;bubble(q,true);
  try{
-   const r=await functionCall("rn-willi-chat",{text:q,history:lastSpeech?[]:[]});
+   const workerUrl=String(cfg.cloudflareWorkerUrl||"").replace(/\\/$/,"");
+   if(!/^https:\/\/[a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.workers\\.dev$/i.test(workerUrl))throw Error("Willi-KI ist noch nicht verbunden. Der Cloudflare-Worker muss zuerst eingerichtet werden.");
+   if(!session?.access_token)throw Error("Bitte erneut anmelden.");
+   const response=await fetch(workerUrl+"/chat",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify({text:q})});
+   const r=await response.json().catch(()=>({error:"Unbekannte Serverantwort."}));
+   if(!response.ok)throw Error(r.error||"Cloudflare-KI antwortet nicht.");
    const reply=typeof r.reply==="string"?r.reply:"Willi hat gerade keine Antwort geliefert.";
    bubble(reply);lastSpeech=reply;
    if(!fromMic){await playVoice(reply);}return reply;
