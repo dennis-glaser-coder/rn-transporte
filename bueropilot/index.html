@@ -11,6 +11,7 @@
 <script src="./config.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 <script src="./voice.js" defer></script>
+<script src="./piper.js" defer></script>
 <script src="./app.js" defer></script>
 </head>
 <body>
@@ -70,7 +71,7 @@
     <div class="panel panel-willi">
       <div class="eyebrow">DEIN DIGITALER DISONENT</div><div class="willi-avatar">W</div><h2>Willi ist für dich da.</h2><p>Frag nach Terminen, kläre offene Punkte oder besprich eine Änderung. Willi speichert nichts ohne eine dafür freigeschaltete Funktion.</p>
       <button class="btn btn-primary" id="openWilli">Mit Willi sprechen →</button>
-      <div class="small-note">Die kostenlose Stimme ist im Browser verfügbar. Der geschützte Chat braucht weiterhin einen freigegebenen Mitarbeiterzugang.</div>
+      <div class="small-note">Piper/Thorsten ist als kostenlose Browser-Stimme vorgesehen. Der geschützte Chat braucht weiterhin einen freigegebenen Mitarbeiterzugang.</div>
     </div>
   </div>
 </div>
@@ -83,7 +84,7 @@
 <div id="williPanel" class="tab-panel" hidden>
   <div class="chat-layout">
     <div class="chat-info"><div class="eyebrow">SPRACHASSISTENT</div><div class="willi-avatar big">W</div><h2>Moin, ich bin Willi.</h2><p>Du kannst normal schreiben oder den Gesprächsmodus versuchen. Ich frage nach, wenn Angaben fehlen, und behaupte nicht, einen Auftrag gespeichert zu haben.</p>
-      <div class="voice-status" id="voiceStatus">Kostenlose Browserstimme wird vorbereitet.</div>
+      <div class="voice-status" id="voiceStatus">Kostenlose Piper/Thorsten-Stimme wird vorbereitet.</div>
       <label for="williVoice">Willis Stimme auswählen</label><select id="williVoice" class="voice-select" aria-label="Willis Stimme"></select>
       <label for="williRate">Sprechtempo: <output id="williRateValue">0,88</output></label><input id="williRate" type="range" min="0.7" max="1.2" step="0.05" value="0.88">
       <label for="williPitch">Stimmlage: <output id="williPitchValue">0,82</output></label><input id="williPitch" type="range" min="0.7" max="1.1" step="0.05" value="0.82">
