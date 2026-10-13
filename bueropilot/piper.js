@@ -34,12 +34,20 @@ async function speak(value,options={}){
     inform("Thorsten wird vorbereitet – beim ersten Mal wird die kostenlose Piper-Stimme geladen (rund 63 MB) …");
     const tts=await loadModule();
     if(id!==sequence)return {status:"stopped"};
-    if(typeof tts.predict!=="function")throw Error("Piper-Modul konnte nicht geladen werden.");
-    const wav=await tts.predict({text,voiceId:MODEL},progress=>{
-      if(id!==sequence||!progress||!Number.isFinite(progress.total)||progress.total<=0)return;
-      const pct=Math.min(100,Math.round(100*progress.loaded/progress.total));
-      inform("Piper-Stimme wird geladen: "+pct+" % …");
+    if(typeof tts.TtsSession!=="function")throw Error("Piper-Modul konnte nicht geladen werden.");
+    const session=new tts.TtsSession({
+      voiceId:MODEL,
+      wasmPaths:{
+        onnxWasm:"https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/",
+        piperData:"https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.data",
+        piperWasm:"https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm"
+      },
+      progress:progress=>{
+        if(id!==sequence||!progress||!Number.isFinite(progress.total)||progress.total<=0)return;
+        inform("Piper-Stimme wird geladen: "+Math.min(100,Math.round(100*progress.loaded/progress.total))+" % …");
+      }
     });
+    const wav=await session.predict(text);
     if(id!==sequence)return {status:"stopped"};
     if(!(wav instanceof Blob))throw Error("Piper hat keine Audiodatei erzeugt.");
     wavUrl=URL.createObjectURL(wav);
