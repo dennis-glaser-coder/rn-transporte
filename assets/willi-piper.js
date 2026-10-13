@@ -4,7 +4,7 @@
 (function(root){
 "use strict";
 const MODEL="de_DE-thorsten-medium";
-const MODULE_URL="https://esm.sh/@mintplex-labs/piper-tts-web@1.0.5?bundle";
+const MODULE_URL="https://esm.sh/@mintplex-labs/piper-tts-web@1.0.5?bundle&deps=onnxruntime-web@1.20.1";
 let modulePromise=null,player=null,wavUrl=null,finishCurrent=null,sequence=0;
 
 function notify(handler,text){if(typeof handler==="function")handler(text);}
@@ -35,10 +35,11 @@ async function speak(value,options={}){
     const tts=await loadModule();
     if(id!==sequence)return {status:"stopped"};
     if(typeof tts.TtsSession!=="function")throw Error("Piper-Modul konnte nicht geladen werden.");
+    // Runtime-JavaScript und .mjs/.wasm müssen dieselbe Version nutzen.
     const session=new tts.TtsSession({
       voiceId:MODEL,
       wasmPaths:{
-        onnxWasm:"https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/",
+        onnxWasm:"https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.20.1/",
         piperData:"https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.data",
         piperWasm:"https://cdn.jsdelivr.net/npm/@diffusionstudio/piper-wasm@1.0.0/build/piper_phonemize.wasm"
       },
