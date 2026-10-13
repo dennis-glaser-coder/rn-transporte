@@ -7,12 +7,13 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>RN BüroPilot – Betriebszentrale</title>
 <link rel="icon" href="../assets/favicon-rn.svg" type="image/svg+xml">
-<link rel="stylesheet" href="./app.css?v=6">
+<link rel="stylesheet" href="./app.css?v=8">
 <script defer src="./config.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script defer src="./voice.js"></script>
-<script defer src="./app.js?v=6"></script>
+<script defer src="./app.js?v=8"></script>
 <script defer src="./enhancements.js?v=1"></script>
+<script defer src="./fleet.js?v=1"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -25,6 +26,7 @@
       <button class="nav-item" data-view="offers"><span class="nav-icon">▤</span>Angebote</button>
       <button class="nav-item" data-view="jobs"><span class="nav-icon">☷</span>Aufträge</button>
       <button class="nav-item" data-view="customers"><span class="nav-icon">♙</span>Kunden & Baustellen</button>
+      <button class="nav-item" data-view="vehicles"><span class="nav-icon">▱</span>Fahrzeuge <span class="fleet-nav-count">7</span></button>
     </nav>
     <div class="side-label">VERWALTUNG</div>
     <nav class="side-nav" aria-label="Verwaltung">
@@ -78,6 +80,18 @@
 
       <section class="view" id="customersView" data-title="Kunden & Baustellen"><div class="page-heading"><div><div class="kicker">STAMMDATEN</div><h1>Kunden & Baustellen</h1><p>Alle Ansprechpartner, Standorte und Aufträge an einem Ort.</p></div></div><div class="surface"><div class="module-empty"><span class="module-symbol">♙</span><h2>Kundenkartei</h2><p>Kontakte, Adressen und Baustellen werden hier zentral geführt. Die geschützte Datenspeicherung ist noch nicht freigegeben.</p><span class="tag tag-neutral">In Vorbereitung</span></div></div></section>
 
+
+      <section class="view" id="vehiclesView" data-title="Fahrzeuge">
+        <div class="page-heading"><div><div class="kicker">FUHRPARK & MASCHINEN</div><h1>Fahrzeugverwaltung</h1><p>Betonmischer, Sattelzugmaschinen und Betonpumpen an einem Ort.</p></div><button type="button" class="button button-primary" id="fleetAdd">＋ Fahrzeug hinzufügen</button></div>
+        <div class="fleet-info" id="fleetInfo" role="status">Die sieben eingespielten Fahrzeuge werden geladen …</div>
+        <div class="fleet-stats"><div class="fleet-stat"><small>Gesamt</small><b id="fleetTotal">7</b><span>Erfasste Fahrzeuge</span></div><div class="fleet-stat"><small>Betonmischer</small><b id="fleetMixers">3</b><span>Vierachser</span></div><div class="fleet-stat"><small>Sattelzugmaschinen</small><b id="fleetTractors">2</b><span>Zugmaschinen</span></div><div class="fleet-stat"><small>Betonpumpen</small><b id="fleetPumps">2</b><span>M24 / M36</span></div></div>
+        <section class="surface fleet-surface">
+          <div class="section-head"><div><h2>Fuhrpark</h2><p>Fahrzeuge verwalten, bearbeiten und deaktivieren</p></div><button type="button" class="button button-outline" id="fleetRefresh">↻ Aktualisieren</button></div>
+          <div class="fleet-filters"><label for="fleetSearch" class="sr-only">Fahrzeug suchen</label><input id="fleetSearch" type="search" placeholder="Kennzeichen oder Fahrzeug suchen …" autocomplete="off"><label for="fleetFilter" class="sr-only">Fahrzeugtyp filtern</label><select id="fleetFilter"><option value="all">Alle Fahrzeugtypen</option><option value="Betonmischer 4 Achser">Betonmischer</option><option value="Sattelzugmaschine">Sattelzugmaschinen</option><option value="Betonpumpe">Betonpumpen</option><option value="Sonstiges">Sonstige</option></select><label class="fleet-include-inactive"><input type="checkbox" id="fleetInactive"> Inaktive anzeigen</label></div>
+          <div id="fleetList" class="fleet-list" aria-live="polite"></div>
+          <div id="fleetEmpty" class="fleet-empty" hidden>Keine Fahrzeuge für diese Auswahl vorhanden.</div>
+        </section>
+      </section>
       <section class="view" id="tollView" data-title="Maut-CSV"><div class="page-heading"><div><div class="kicker">WOCHENABLAUF</div><h1>Maut-CSV hochladen</h1><p>Die Wochen-Datei vor dem Import prüfen und Fehler sofort erkennen.</p></div></div>
         <div class="surface"><div class="section-head"><div><h2>CSV-Datei auswählen</h2><p>Die Datei wird zunächst nur auf deinem Gerät eingelesen.</p></div><span class="tag tag-neutral">Prüfmodus</span></div>
           <div class="upload-controls"><label>Kalenderwoche<input id="tollWeek" type="week"></label><label for="csvFile" class="file-drop"><span class="upload-icon">⇧</span><strong>CSV-Datei auswählen</strong><small>Datei hier antippen · .csv oder .txt · bis 8 MB</small><input id="csvFile" type="file" accept=".csv,.txt,text/csv,text/plain"></label></div>
@@ -100,6 +114,16 @@
 </div>
 
 <dialog id="authDialog" class="auth-dialog"><form method="dialog"><button class="dialog-close" aria-label="Schließen">×</button></form><span class="brandmark small">RN</span><h2>Beim BüroPilot anmelden</h2><p>Der Mitarbeiterzugang ist geschützt. Du bekommst einen einmaligen Link per E-Mail.</p><form id="loginForm"><label for="loginEmail">Deine RN-E-Mail-Adresse</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@firma.de"><button class="button button-primary full" id="loginButton" type="submit">Anmeldelink senden ↗</button></form><p class="inline-feedback" id="loginStatus" role="status"></p><small>Es werden keine neuen Konten automatisch angelegt.</small></dialog>
+
+<dialog id="fleetDialog" class="fleet-dialog"><form id="fleetForm" novalidate>
+ <div class="fleet-dialog-head"><div><div class="kicker">FUHRPARK</div><h2 id="fleetDialogTitle">Fahrzeug hinzufügen</h2></div><button class="fleet-dialog-close" type="button" id="fleetCancelX" aria-label="Schließen">×</button></div>
+ <label for="fleetRegistration">Kennzeichen *</label><input id="fleetRegistration" maxlength="30" autocomplete="off" required placeholder="z. B. PB RN3243">
+ <label for="fleetKind">Fahrzeugtyp *</label><select id="fleetKind" required><option>Betonmischer 4 Achser</option><option>Sattelzugmaschine</option><option>Betonpumpe M24</option><option>Betonpumpe M36</option><option>Sonstiges</option></select>
+ <label for="fleetNote">Notiz (optional)</label><textarea id="fleetNote" maxlength="400" rows="3" placeholder="z. B. Aufbau, Ausstattung, Hinweise"></textarea>
+ <label class="fleet-active-check"><input id="fleetActive" type="checkbox" checked> Fahrzeug aktiv</label>
+ <div id="fleetFormError" class="fleet-form-error" role="alert"></div>
+ <div class="fleet-dialog-actions"><button class="button button-outline" type="button" id="fleetCancel">Abbrechen</button><button class="button button-primary" type="submit" id="fleetSave">Fahrzeug speichern</button></div>
+</form></dialog>
 <div id="mobileBackdrop" class="mobile-backdrop" hidden></div>
 </body>
 </html>
