@@ -128,7 +128,7 @@ async function onCustomer(e){
  e.preventDefault();if(!writing()||busy)return;const form=e.currentTarget,fd=new FormData(form),name=String(fd.get("name")||"").trim();
  if(name.length<2)return;busy=true;
  try{const r=await db.from("rn_customers").insert({org_id:staff.org_id,name,phone:String(fd.get("phone")||"").trim(),email:String(fd.get("email")||"").trim(),address:String(fd.get("address")||"").trim()}).select("id");
-  if(r.error||!r.data?.length)throw r.error||Error("Kunde nicht gespeichert");form.reset();message("opsCustomerMessage","Kunde wurde gespeichert.");await refresh()
+  if(r.error||!r.data?.length)throw r.error||Error("Kunde nicht gespeichert");form.reset();message("opsCustomerMessage","Kunde wurde gespeichert.");await refresh();window.RNBuroPilotReloadDocuments?.()
  }catch(err){message("opsCustomerMessage","Speichern fehlgeschlagen: "+err.message)}finally{busy=false}
 }
 async function onQuote(e){
