@@ -125,7 +125,7 @@ function startMic(){
 async function init(){
  if(initComplete)return;initComplete=true;
  $("loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!supabase)return;const email=$("loginEmail").value.trim();$("loginButton").disabled=true;
-  try{const {error}=await supabase.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});if(error)throw error;message("Prüfe deine E-Mails. Der Link führt dich zurück zu BüroPilot.");}
+  try{const {error}=await supabase.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(error)throw error;message("Prüfe deine E-Mails. Der Link führt dich zurück zu BüroPilot.");}
   catch(e){message(e.message);}finally{$("loginButton").disabled=false;}
  });
  $("logoutBtn").addEventListener("click",async()=>{endMic();if(supabase)await supabase.auth.signOut();session=null;showAuth();setStatus("Abgemeldet");});
