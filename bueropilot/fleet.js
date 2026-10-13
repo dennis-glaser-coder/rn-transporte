@@ -36,7 +36,7 @@ function saveLocalPair(tractorId,trailerId){
  try{localStorage.setItem(previewKey,JSON.stringify(localPairs))}catch(_){localStorageAvailable=false}
 }
 const isTrailer=v=>v.kind==="Kippauflieger"||v.kind==="Mischauflieger";
-let db=null,rows=previewRows(),live=false,canWrite=false,org=null,editing=null,tractor=null,busy=false,loadPending=false;
+let staffNames={};let db=null,rows=previewRows(),live=false,canWrite=false,org=null,editing=null,tractor=null,busy=false,loadPending=false;
 const safe=t=>String(t??"");
 function info(msg){$("fleetInfo").textContent=msg;$("fleetInfo").classList.toggle("live",live)}
 function currentTrailer(v){return rows.find(x=>x.connected_tractor_id&&x.connected_tractor_id===v.id)}
@@ -61,6 +61,7 @@ function draw(){
    row.append(tag("div","fleet-type-icon "+ty,ty==="pump"?"◉":ty==="tractor"?"▰":ty==="trailer"?"▱":"▥"));
    const desc=tag("div","fleet-description");desc.append(tag("b","",v.registration),tag("span","",v.kind));
    if(v.note)desc.append(tag("small","",v.note));
+   if(live&&v.assigned_employee_id&&staffNames[v.assigned_employee_id])desc.append(tag("small","fleet-assignee","Mitarbeiter: "+staffNames[v.assigned_employee_id]));
    if(v.kind==="Sattelzugmaschine"){const attached=currentTrailer(v);desc.append(tag("small","fleet-attached",attached?"Auflieger: "+attached.registration:"Kein Auflieger verbunden"))}
    if(isTrailer(v)){const linked=connectedTractor(v);desc.append(tag("small","fleet-attached",linked?"Verbunden mit "+linked.registration:"Nicht verbunden"))}
    row.append(desc);
@@ -81,9 +82,12 @@ async function refresh(){
   if(!auth?.session){live=false;canWrite=false;rows=previewRows();info("Vorschau · Auflieger lassen sich auswählen. Ohne Anmeldung gilt die Verbindung nur auf diesem Gerät.");return}
   const {data:staff,error:staffErr}=await db.from("rn_staff").select("org_id,role,enabled").eq("user_id",auth.session.user.id).maybeSingle();
   if(staffErr||!staff?.enabled){live=false;canWrite=false;rows=previewRows();info("Vorschau · Auflieger auswählen funktioniert bereits lokal. Für firmweite Speicherung fehlt noch die Mitarbeiterfreigabe.");return}
-  const {data,error}=await db.from("rn_vehicles").select("id,org_id,registration,kind,note,active,unavailable_reason,connected_tractor_id").eq("org_id",staff.org_id).order("registration");
-  if(error)throw error;
-  rows=data;org=staff.org_id;live=true;canWrite=["admin","dispatcher"].includes(staff.role);
+  const [vResult,eResult]=await Promise.all([
+   db.from("rn_vehicles").select("id,org_id,registration,kind,note,active,unavailable_reason,connected_tractor_id,assigned_employee_id").eq("org_id",staff.org_id).order("registration"),
+   db.from("rn_employees").select("id,display_name").eq("org_id",staff.org_id)
+  ]);
+  if(vResult.error||eResult.error)throw vResult.error||eResult.error;
+  rows=vResult.data;staffNames=Object.fromEntries(eResult.data.map(e=>[e.id,e.display_name]));org=staff.org_id;live=true;canWrite=["admin","dispatcher"].includes(staff.role);
   info(canWrite?"Fuhrpark aktuell · Auflieger können direkt bei der Sattelzugmaschine verbunden werden.":"Fuhrpark aktuell · du hast nur Leserechte.");
  }catch(e){live=false;canWrite=false;rows=previewRows();info("Nur lokale Vorschau – die Datenbank ist nicht erreichbar: "+(e.message||"Fehler"))}
  finally{loadPending=false;draw()}
