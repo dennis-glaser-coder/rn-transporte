@@ -6,7 +6,7 @@ import {Script, runInNewContext} from "node:vm";
 const read = path => readFileSync(path, "utf8");
 const root = "bueropilot/";
 const html = read(root + "index.html");
-const sources = ["app.js","enhancements.js","fleet.js","voice.js"];
+const sources = ["app.js","enhancements.js","fleet.js","voice.js","operations.js","documents.js"];
 const assets = ["app.css","config.js","index.html",...sources];
 const errors = [];
 function test(name, fn) {
@@ -28,7 +28,7 @@ test("registered views have HTML panels", () => {
 });
 test("static HTML references and dynamically created controls", () => {
   const found = new Set([...html.matchAll(/id="([^"]+)"/g)].map(x => x[1]));
-  for (const x of enhanced.matchAll(/id="([^"]+)"/g)) found.add(x[1]);
+  for (const file of ["enhancements.js","operations.js","documents.js"]) for (const x of read(root+file).matchAll(/id="([^"]+)"/g)) found.add(x[1]);
   for (const file of sources) {
     for (const match of read(root + file).matchAll(/\$\("([^"]+)"\)/g)) {
       assert.ok(found.has(match[1]), "missing control " + match[1] + " referenced in " + file);
@@ -36,7 +36,7 @@ test("static HTML references and dynamically created controls", () => {
   }
 });
 test("script and stylesheet assets linked", () => {
-  for (const file of ["app.js","enhancements.js","fleet.js","voice.js","config.js"])
+  for (const file of ["app.js","enhancements.js","fleet.js","voice.js","config.js","operations.js","documents.js"])
     assert.match(html, new RegExp('src="\\./'+file.replace(".", "\\.")+'(?:\\?v=[0-9]+)?"'));
   assert.ok(html.includes('href="./app.css?v='));
 });
@@ -61,6 +61,14 @@ test("calendar selected date navigates to the correct week", () => {
   assert.equal(rendered,1,"valid day should navigate to calendar week");
   ctx.window.RNBuroPilotGoToCalendarDate("2026-99-99");
   assert.equal(rendered,1,"invalid day must not navigate");
+});
+
+test("protected business workflows are wired", () => {
+  const operations=read(root+"operations.js"),documents=read(root+"documents.js");
+  for (const name of ["rn_quote_to_job","rn_job_advance","rn_quotes","rn_customers","rn_employees"]) assert.ok(operations.includes(name),name);
+  for (const name of ["rn_toll_imports","rn_timesheets","rn_invoice_drafts","rn_customer_sites"]) assert.ok(documents.includes(name),name);
+  assert.ok(operations.includes("window.RNBuroPilotReloadJobs"),"dashboard refresh missing");
+  assert.ok(documents.includes("window.RNBuroPilotCSV"),"CSV integration missing");
 });
 
 test("CSV separator detection handles comma-heavy fields", () => {
