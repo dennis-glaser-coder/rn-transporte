@@ -4,9 +4,39 @@ const $=id=>document.getElementById(id);
 const initial=[
 ["PB RN3240","Betonmischer 4 Achser"],["PB RN4241","Betonmischer 4 Achser"],["PB RN3242","Betonmischer 4 Achser"],["PB RN784","Sattelzugmaschine"],["PB RN2646","Sattelzugmaschine"],["PB RN1833","Betonpumpe M24"],["PB RN2636","Betonpumpe M36"],["PB RN 2412","Kippauflieger"],["PB RN 2312","Mischauflieger"],["PB RN 847","Mischauflieger"]
 ];
-const demo=initial.map(([registration,kind])=>({registration,kind,active:true,note:"",preview:true}));
+const previewKey="rn-bueropilot-trailer-selection-v1";
+const trailerIds=new Set(initial.filter(([,kind])=>kind==="Kippauflieger"||kind==="Mischauflieger").map(([registration])=>registration));
+const tractorIds=new Set(initial.filter(([,kind])=>kind==="Sattelzugmaschine").map(([registration])=>registration));
+let localPairs={};
+let localStorageAvailable=true;
+try{
+ const parsed=JSON.parse(localStorage.getItem(previewKey)||"{}");
+ if(parsed&&typeof parsed==="object"&&!Array.isArray(parsed)){
+  const used=new Set();
+  for(const [tractor,trailer] of Object.entries(parsed)){
+   if(tractorIds.has(tractor)&&trailerIds.has(trailer)&&!used.has(trailer)){localPairs[tractor]=trailer;used.add(trailer)}
+  }
+ }
+}catch(_){localStorageAvailable=false}
+function previewRows(){
+ const rows=initial.map(([registration,kind])=>({id:registration,registration,kind,active:true,note:"",preview:true}));
+ for(const [tractor,trailer] of Object.entries(localPairs)){
+  const item=rows.find(x=>x.registration===trailer);
+  if(item)item.connected_tractor_id=tractor;
+ }
+ return rows
+}
+function saveLocalPair(tractorId,trailerId){
+ if(!tractorIds.has(tractorId))throw Error("Unbekannte Zugmaschine");
+ if(trailerId&&!trailerIds.has(trailerId))throw Error("Unbekannter Auflieger");
+ for(const [tractor,attached] of Object.entries(localPairs)){
+  if(tractor!==tractorId&&trailerId&&attached===trailerId)throw Error("Der Auflieger ist bereits einer anderen Zugmaschine zugeordnet.")
+ }
+ if(trailerId)localPairs[tractorId]=trailerId;else delete localPairs[tractorId];
+ try{localStorage.setItem(previewKey,JSON.stringify(localPairs))}catch(_){localStorageAvailable=false}
+}
 const isTrailer=v=>v.kind==="Kippauflieger"||v.kind==="Mischauflieger";
-let db=null,rows=demo,live=false,canWrite=false,org=null,editing=null,tractor=null,busy=false,loadPending=false;
+let db=null,rows=previewRows(),live=false,canWrite=false,org=null,editing=null,tractor=null,busy=false,loadPending=false;
 const safe=t=>String(t??"");
 function info(msg){$("fleetInfo").textContent=msg;$("fleetInfo").classList.toggle("live",live)}
 function currentTrailer(v){return rows.find(x=>x.connected_tractor_id&&x.connected_tractor_id===v.id)}
@@ -21,7 +51,7 @@ function draw(){
  $("fleetPumps").textContent=String(active.filter(x=>x.kind.startsWith("Betonpumpe")).length);
  document.querySelectorAll(".fleet-nav-count").forEach(x=>x.textContent=String(rows.length));
  const query=$("fleetSearch").value.trim().toLocaleLowerCase("de"),kind=$("fleetFilter").value,includeInactive=$("fleetInactive").checked;
- const filtered=sorted(rows.filter(v=>(includeInactive||v.active)&&(kind==="all"||kind==="Auflieger"&&isTrailer(v)||kind==="Betonpumpe"&&v.kind.startsWith("Betonpumpe")||kind===v.kind)&&[v.registration,v.kind,v.note,live?currentTrailer(v)?.registration:"",live?connectedTractor(v)?.registration:""].join(" ").toLocaleLowerCase("de").includes(query)));
+ const filtered=sorted(rows.filter(v=>(includeInactive||v.active)&&(kind==="all"||kind==="Auflieger"&&isTrailer(v)||kind==="Betonpumpe"&&v.kind.startsWith("Betonpumpe")||kind===v.kind)&&[v.registration,v.kind,v.note,currentTrailer(v)?.registration,connectedTractor(v)?.registration].join(" ").toLocaleLowerCase("de").includes(query)));
  $("fleetEmpty").hidden=filtered.length>0;$("fleetList").replaceChildren();
  for(const [label,group] of [["Fahrzeuge",filtered.filter(v=>!isTrailer(v))],["Auflieger",filtered.filter(isTrailer)]]){
   if(!group.length)continue;const section=tag("section","fleet-group");
@@ -31,11 +61,11 @@ function draw(){
    row.append(tag("div","fleet-type-icon "+ty,ty==="pump"?"◉":ty==="tractor"?"▰":ty==="trailer"?"▱":"▥"));
    const desc=tag("div","fleet-description");desc.append(tag("b","",v.registration),tag("span","",v.kind));
    if(v.note)desc.append(tag("small","",v.note));
-   if(live&&v.kind==="Sattelzugmaschine"){const attached=currentTrailer(v);desc.append(tag("small","fleet-attached",attached?"Auflieger: "+attached.registration:"Kein Auflieger verbunden"))}
-   if(live&&isTrailer(v)){const linked=connectedTractor(v);desc.append(tag("small","fleet-attached",linked?"Verbunden mit "+linked.registration:"Nicht verbunden"))}
+   if(v.kind==="Sattelzugmaschine"){const attached=currentTrailer(v);desc.append(tag("small","fleet-attached",attached?"Auflieger: "+attached.registration:"Kein Auflieger verbunden"))}
+   if(isTrailer(v)){const linked=connectedTractor(v);desc.append(tag("small","fleet-attached",linked?"Verbunden mit "+linked.registration:"Nicht verbunden"))}
    row.append(desc);
    const right=tag("div","fleet-row-right");right.append(tag("span","fleet-state "+(!v.active?"off":!live?"preview":""),live?(v.active?"Aktiv":v.unavailable_reason||"Inaktiv"):"Vorschau"));
-   if(v.kind==="Sattelzugmaschine"){const btn=tag("button","fleet-connect","Auflieger wählen");btn.type="button";btn.disabled=!canWrite||!v.active;btn.title=!canWrite?"Nur mit freigegebenem Mitarbeiterzugang":!v.active?"Inaktive Zugmaschine":"Auflieger verbinden oder lösen";btn.onclick=()=>openTrailer(v);right.append(btn)}
+   if(v.kind==="Sattelzugmaschine"){const btn=tag("button","fleet-connect","Auflieger wählen");btn.type="button";btn.disabled=!v.active;btn.title=!v.active?"Inaktive Zugmaschine":canWrite?"Auflieger firmenweit verbinden oder lösen":"Auflieger auf diesem Gerät auswählen";btn.onclick=()=>openTrailer(v);right.append(btn)}
    const editBtn=tag("button","fleet-edit","Bearbeiten");editBtn.type="button";editBtn.disabled=!canWrite;editBtn.onclick=()=>openEdit(v);right.append(editBtn);row.append(right);section.append(row);
   }
   $("fleetList").append(section);
@@ -48,19 +78,19 @@ async function refresh(){
   if(!window.supabase?.createClient||!cfg.supabaseUrl||!cfg.supabasePublishableKey)throw Error("Verbindung noch nicht bereit");
   if(!db)db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
   const {data:auth,error:authErr}=await db.auth.getSession();if(authErr)throw authErr;
-  if(!auth?.session){live=false;canWrite=false;rows=demo;info("Vorschau der 10 erfassten Fahrzeuge und Auflieger. Für Verbindungen bitte anmelden.");return}
+  if(!auth?.session){live=false;canWrite=false;rows=previewRows();info("Vorschau · Auflieger lassen sich auswählen. Ohne Anmeldung gilt die Verbindung nur auf diesem Gerät.");return}
   const {data:staff,error:staffErr}=await db.from("rn_staff").select("org_id,role,enabled").eq("user_id",auth.session.user.id).maybeSingle();
-  if(staffErr||!staff?.enabled){live=false;canWrite=false;rows=demo;info("Mitarbeiterzugang noch nicht freigegeben. Es werden nur Beispieldarstellungen gezeigt.");return}
+  if(staffErr||!staff?.enabled){live=false;canWrite=false;rows=previewRows();info("Vorschau · Auflieger auswählen funktioniert bereits lokal. Für firmweite Speicherung fehlt noch die Mitarbeiterfreigabe.");return}
   const {data,error}=await db.from("rn_vehicles").select("id,org_id,registration,kind,note,active,unavailable_reason,connected_tractor_id").eq("org_id",staff.org_id).order("registration");
   if(error)throw error;
   rows=data;org=staff.org_id;live=true;canWrite=["admin","dispatcher"].includes(staff.role);
   info(canWrite?"Fuhrpark aktuell · Auflieger können direkt bei der Sattelzugmaschine verbunden werden.":"Fuhrpark aktuell · du hast nur Leserechte.");
- }catch(e){live=false;canWrite=false;rows=demo;info("Datenbank zurzeit nicht erreichbar. Nur Vorschau: "+(e.message||"Fehler"))}
+ }catch(e){live=false;canWrite=false;rows=previewRows();info("Nur lokale Vorschau – die Datenbank ist nicht erreichbar: "+(e.message||"Fehler"))}
  finally{loadPending=false;draw()}
 }
 function checkWrite(){if(live&&canWrite)return true;info("Zum Bearbeiten bitte als freigegebener Mitarbeiter der Disposition anmelden.");return false}
 function openTrailer(v){
- if(!checkWrite())return;
+ if(!v.active)return;
  tractor=v;const select=$("fleetTrailerChoice");select.replaceChildren(new Option("Keinen Auflieger verbinden","none"));
  const attached=currentTrailer(v);
  for(const x of sorted(rows.filter(x=>isTrailer(x)&&x.active))){
@@ -69,16 +99,31 @@ function openTrailer(v){
   const option=new Option(label,x.id);option.disabled=Boolean(other);select.append(option)
  }
  select.value=attached?.id||"none";$("fleetTrailerTractor").textContent="Zugmaschine: "+v.registration;
+ const msg=$("fleetTrailerDialog").querySelector(".fleet-field-note");
+ msg.textContent=canWrite?"Die Verbindung wird firmenweit gespeichert. Ein Auflieger kann nur an einer Zugmaschine hängen.":"Diese Auswahl wird nur auf deinem Gerät gespeichert – nicht in der Firmen-Datenbank. Ein Auflieger kann nur einmal ausgewählt werden.";
+ $("fleetTrailerSave").textContent=canWrite?"Verbindung speichern":"Auf diesem Gerät speichern";
  $("fleetTrailerError").textContent="";$("fleetTrailerDialog").showModal();
 }
 async function saveTrailer(event){
- event.preventDefault();if(!checkWrite()||!tractor||busy)return;busy=true;$("fleetTrailerSave").disabled=true;
+ event.preventDefault();if(!tractor||busy)return;busy=true;$("fleetTrailerSave").disabled=true;
  try{
   const id=$("fleetTrailerChoice").value;
-  const result=await db.rpc("rn_connect_trailer",{p_tractor_id:tractor.id,p_trailer_id:id==="none"?null:id});
-  if(result.error)throw result.error;
-  $("fleetTrailerDialog").close();await refresh();
-  info(id==="none"?"Aufliegerverbindung gelöst.":"Aufliegerverbindung erfolgreich gespeichert.");
+  if(live&&canWrite){
+   const result=await db.rpc("rn_connect_trailer",{p_tractor_id:tractor.id,p_trailer_id:id==="none"?null:id});
+   if(result.error)throw result.error;
+   $("fleetTrailerDialog").close();await refresh();
+   info(id==="none"?"Aufliegerverbindung gelöst.":"Aufliegerverbindung firmenweit gespeichert.");
+  }else{
+   // Never write to the company database from an unapproved session.
+   const tractorRegistration=tractor.registration;
+   const selected=id==="none"?null:rows.find(x=>x.id===id)?.registration;
+   saveLocalPair(tractorRegistration,selected);
+   rows=previewRows();
+   live=false;canWrite=false;
+   $("fleetTrailerDialog").close();
+   draw();
+   info((selected?"Auflieger "+selected+" mit "+tractorRegistration+" verbunden.":"Aufliegerverbindung gelöst.")+(localStorageAvailable?" Nur auf diesem Gerät gespeichert.":" Nur für diese Sitzung gespeichert."));
+  }
  }catch(e){$("fleetTrailerError").textContent=e.message||"Verbindung nicht gespeichert."}
  finally{busy=false;$("fleetTrailerSave").disabled=false}
 }
