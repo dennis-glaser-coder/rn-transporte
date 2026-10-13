@@ -8,7 +8,7 @@ let db=null,session=null,staff=null,write=false;
 let customers=[],quotes=[],orders=[],vehicles=[],employees=[];
 let editingQuote=null,convertingQuote=null,busy=false;
 const viewIds=["customersView","offersView","jobsView","teamView"];
-const banner='<p class="ops-context" id="opsAccess" role="status">Die geschützten Unternehmensdaten werden geladen …</p>';
+const banner='<p class="ops-context" role="status">Die geschützten Unternehmensdaten werden geladen …</p>';
 function currency(n){return n==null?"":new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(n)}
 function mount(){
  $("customersView").innerHTML='<div class="page-heading"><div><div class="kicker">STAMMDATEN</div><h1>Kunden & Baustellen</h1><p>Kunden einmal erfassen und für Angebote wiederverwenden.</p></div></div>'+banner+
@@ -148,7 +148,7 @@ async function onConvert(e){
   $("opsConvertDialog").close();convertingQuote=null;await refresh();
   document.querySelector('[data-view="jobs"]')?.click();
   $("opsOrderList").prepend(Object.assign(document.createElement("p"),{className:"ops-feedback",textContent:"Auftrag gespeichert und Fahrzeugzeit eingeplant."}));
-  document.querySelector("#refreshJobs")?.click();
+  window.RNBuroPilotReloadJobs?.();
  }catch(err){message("opsConvertMessage","Auftrag konnte nicht gespeichert werden: "+(err.code==="23P01"?"Fahrzeug ist zu dieser Zeit bereits eingeplant.":err.message||String(err)))}
  finally{busy=false;$("opsConvertSave").disabled=false}
 }
