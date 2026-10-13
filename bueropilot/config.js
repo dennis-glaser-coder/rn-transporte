@@ -1,6 +1,5 @@
-// Only the Supabase Project URL and PUBLIC publishable/anon key belong here.
-// The ElevenLabs API key, AI key and service_role key must NEVER be added.
+// Supabase PUBLIC project values only. NEVER put service role, AI or ElevenLabs secrets here.
 window.RN_PUBLIC_CONFIG = Object.freeze({
-  supabaseUrl: "",
-  supabasePublishableKey: ""
+  supabaseUrl: "https://lsdjscvpbahvllwfzjhs.supabase.co",
+  supabasePublishableKey: "sb_publishable_roOWR9KPI_1ckEkdPPfixA_wew89Trk"
 });
