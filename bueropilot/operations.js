@@ -119,7 +119,7 @@ function convertQuote(q){
  if(!writing())return;
  convertingQuote=q;
  const sel=$("opsConvertVehicle");sel.replaceChildren(new Option("Fahrzeug auswählen …",""));
- for(const v of vehicles.filter(v=>v.active&&!/auflieger$/.test(v.kind)))sel.add(new Option(v.registration+" · "+v.kind,v.id));
+ for(const v of vehicles.filter(v=>v.active&&!/auflieger$/.test(v.kind)&&(q.service!=="Betonpumpe"||v.kind.startsWith("Betonpumpe"))&&(q.service!=="Betontransport"||["Betonmischer 4 Achser","Sattelzugmaschine"].includes(v.kind))))sel.add(new Option(v.registration+" · "+v.kind,v.id));
  const emp=$("opsConvertEmployee");emp.replaceChildren(new Option("Noch nicht zugeordnet",""));for(const person of employees.filter(x=>x.active))emp.add(new Option(person.display_name,person.id));
  $("opsConvertTitle").textContent=(customers.find(c=>c.id===q.customer_id)?.name||"Angebot")+" · "+q.service_date+" · "+String(q.start_time).slice(0,5)+" Uhr";
  message("opsConvertMessage","");$("opsConvertDialog").showModal()
