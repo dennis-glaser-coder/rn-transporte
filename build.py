@@ -126,7 +126,8 @@ def footer() -> str:
     return (
         '<footer><div class="wrap foot"><span>RN Torwesten Transporte · Salzkotten</span>'
         '<div class="foot-links"><a href="karriere.html">Karriere</a><a href="impressum.html">Impressum</a>'
-        '<a href="datenschutz.html">Datenschutz</a></div></div></footer>'
+        '<a href="datenschutz.html">Datenschutz</a>'
+        '<a href="https://rn-torwesten.de/dispo">Mitarbeiter-Login</a></div></div></footer>'
     )
 
 
